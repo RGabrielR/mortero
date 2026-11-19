@@ -17,7 +17,8 @@ self.addEventListener("push", (event) => {
       await self.registration.showNotification(data.title, {
         body: data.body,
         icon: "/icon-192.png",
-        badge: "/icon-192.png",
+        // Silueta blanca con fondo transparente: con un PNG a color, Android muestra un cuadrado blanco
+        badge: "/badge-96.png",
         tag: data.tag,
         renotify: Boolean(data.tag),
         data: { url: data.url },
