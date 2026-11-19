@@ -11,6 +11,7 @@ import { distanceKm, distanceLabel } from "../geo.js";
 import { deleteImage, MAX_UPLOAD_BYTES, saveImage } from "../storage.js";
 import { hasAlbumAccess, recordView } from "./premium.js";
 import { pushTo } from "../push.js";
+import { APP_NAME } from "../brand.js";
 
 const { profile, photo, block, report, conversation, directMessage } = schema;
 
@@ -221,7 +222,7 @@ socialRoutes.post("/conversations/:id/messages", async (c) => {
   // Notificación discreta (sin nombre ni contenido). Se manda siempre: si la app está abierta y a la vista,
   // el service worker no la muestra. Antes se salteaba si "estaba en línea", y en el celu con la app
   // minimizada la conexión queda abierta un rato y el aviso nunca llegaba.
-  pushTo(otherId, { title: "mortero", body: "Tenés un mensaje nuevo", url: `/mensajes/${conv.id}`, tag: `dm-${conv.id}` }).catch(() => {});
+  pushTo(otherId, { title: APP_NAME, body: "Tenés un mensaje nuevo", url: `/mensajes/${conv.id}`, tag: `dm-${conv.id}` }).catch(() => {});
   return c.json(msg);
 });
 

@@ -4,6 +4,8 @@ import { api, ApiError, authClient, closeSocket, getSocket, type Me } from "./ap
 import { Admin } from "./pages/Admin";
 import { Login } from "./pages/Login";
 import { NotifyBanner } from "./components/NotifyBanner";
+import { Wordmark } from "./components/Wordmark";
+import { APP_NAME } from "./brand";
 import { ForgotPassword, ResetPassword } from "./pages/Password";
 import { Onboarding } from "./pages/Onboarding";
 import { GroupChat } from "./pages/GroupChat";
@@ -42,7 +44,7 @@ export function App() {
     reload();
   }, [reload]);
 
-  if (loading) return <div className="splash"><span className="wordmark">mortero</span></div>;
+  if (loading) return <div className="splash"><Wordmark /></div>;
 
   return (
     <MeContext.Provider value={{ me, loading, reload }}>
@@ -87,7 +89,7 @@ function Suspended() {
   return (
     <div className="auth">
       <div className="auth__hero">
-        <h1 className="wordmark wordmark--big">mortero</h1>
+        <Wordmark big />
       </div>
       <div className="auth__card">
         <h2>Tu cuenta está suspendida</h2>
@@ -168,7 +170,7 @@ function Shell() {
   // Contador en la pestaña del navegador y en el ícono de la app instalada
   useEffect(() => {
     const n = unread + pending;
-    document.title = n ? `(${n}) mortero` : "mortero";
+    document.title = n ? `(${n}) ${APP_NAME}` : APP_NAME;
     const nav = navigator as Navigator & { setAppBadge?: (n?: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
     if (n) nav.setAppBadge?.(n).catch(() => {});
     else nav.clearAppBadge?.().catch(() => {});

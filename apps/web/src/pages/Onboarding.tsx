@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { api, authClient } from "../api";
 import { useMe } from "../App";
+import { APP_NAME } from "../brand";
+import { Wordmark } from "../components/Wordmark";
 
 function maxBirthdate() {
   const d = new Date();
@@ -36,7 +38,7 @@ export function Onboarding() {
   return (
     <div className="auth">
       <div className="auth__hero">
-        <h1 className="wordmark wordmark--big">mortero</h1>
+        <Wordmark big />
         <p className="auth__tag">Dos datos y entrás.</p>
       </div>
       <form className="auth__card form" onSubmit={submit}>
@@ -54,7 +56,7 @@ export function Onboarding() {
           <span>Confirmo que tengo 18 años o más.</span>
         </label>
         {error && <p className="error" role="alert">{error}</p>}
-        <button className="btn btn--primary" disabled={!adult || busy}>{busy ? "Un toque…" : "Entrar a mortero"}</button>
+        <button className="btn btn--primary" disabled={!adult || busy}>{busy ? "Un toque…" : `Entrar a ${APP_NAME}`}</button>
         <button
           type="button"
           className="btn btn--ghost"

@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "./env.js";
+import { APP_NAME } from "./brand.js";
 
 // Mails por SMTP: sirve cualquier proveedor (Resend, Brevo, Mailgun, un servidor propio…).
 // Sin SMTP_URL no se manda nada; en desarrollo el mail se muestra en la consola para poder probar.
@@ -33,7 +34,7 @@ function layout(title: string, paragraphs: string[], button?: { label: string; u
     : "";
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f4f1f6;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:28px">
-<p style="margin:0 0 18px;font-size:24px;font-weight:800;letter-spacing:-0.03em;color:#ff6a3d">mortero</p>
+<p style="margin:0 0 18px;font-size:24px;font-weight:800;letter-spacing:-0.03em;color:#ff6a3d">${esc(APP_NAME)}</p>
 <h1 style="margin:0 0 14px;font-size:20px;color:#141216">${esc(title)}</h1>${p}${b}
 <p style="margin:24px 0 0;font-size:12px;color:#8a8392">App comunitaria, gratuita y de código abierto.</p>
 </div></body></html>`;
@@ -44,13 +45,13 @@ export function welcomeMail(to: string, name: string): Mail {
   const hi = first ? `¡Hola, ${first}!` : "¡Hola!";
   return {
     to,
-    subject: "Bienvenide a mortero",
-    text: `${hi}\n\nYa tenés tu cuenta en mortero. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.\n\nRecién arrancamos y somos pocas personas, así que te recomendamos pasar por el chat general y los grupos para conocer gente.\n\nEntrá: ${env.APP_URL}\n\nSi querés proponer ideas o sumarte a construirla: https://github.com/RGabrielR/mortero/discussions`,
+    subject: `Bienvenide a ${APP_NAME}`,
+    text: `${hi}\n\nYa tenés tu cuenta en ${APP_NAME}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.\n\nRecién arrancamos y somos pocas personas, así que te recomendamos pasar por el chat general y los grupos para conocer gente.\n\nEntrá: ${env.APP_URL}\n\nSi querés proponer ideas o sumarte a construirla: https://github.com/RGabrielR/mortero/discussions`,
     html: layout(hi, [
-      "Ya tenés tu cuenta en mortero. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.",
+      `Ya tenés tu cuenta en ${esc(APP_NAME)}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.`,
       "Recién arrancamos y somos pocas personas, así que te recomendamos pasar por el <b>chat general</b> y los <b>grupos</b> para conocer gente.",
       `¿Tenés ideas? Sumate a <a href="https://github.com/RGabrielR/mortero/discussions" style="color:#e2532a">construirla entre todes</a>.`,
-    ], { label: "Entrar a mortero", url: env.APP_URL }),
+    ], { label: `Entrar a ${APP_NAME}`, url: env.APP_URL }),
   };
 }
 
@@ -58,7 +59,7 @@ export function resetMail(to: string, url: string): Mail {
   return {
     to,
     subject: "Cambiá tu contraseña",
-    text: `Pediste cambiar tu contraseña de mortero. Entrá a este link para elegir una nueva (vence en 1 hora):\n\n${url}\n\nSi no fuiste vos, ignorá este mail: tu contraseña sigue igual.`,
+    text: `Pediste cambiar tu contraseña de ${APP_NAME}. Entrá a este link para elegir una nueva (vence en 1 hora):\n\n${url}\n\nSi no fuiste vos, ignorá este mail: tu contraseña sigue igual.`,
     html: layout("Cambiá tu contraseña", [
       "Pediste cambiar tu contraseña. Tocá el botón para elegir una nueva. El link vence en 1 hora.",
       "Si no fuiste vos, ignorá este mail: tu contraseña sigue igual.",

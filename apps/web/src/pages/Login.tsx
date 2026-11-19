@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { api, authClient } from "../api";
 import { useMe } from "../App";
+import { Wordmark } from "../components/Wordmark";
 
 export function Login() {
   const { reload } = useMe();
@@ -37,7 +38,7 @@ export function Login() {
   return (
     <div className="auth">
       <div className="auth__hero">
-        <h1 className="wordmark wordmark--big">mortero</h1>
+        <Wordmark big />
         <p className="auth__tag">Gente cerca, grupos y charla. Gratis y de código abierto, para siempre.</p>
       </div>
 

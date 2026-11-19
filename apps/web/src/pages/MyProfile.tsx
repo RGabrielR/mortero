@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { api, authClient, closeSocket, upload, type Author, type Profile } from "../api";
 import { useMe } from "../App";
+import { APP_NAME } from "../brand";
 import { Avatar } from "../components/Avatar";
 import { EyeIcon, LockIcon, PlusIcon, StarIcon } from "../components/Icons";
 import { disablePush, enablePush, pushState, type PushState } from "../push";
@@ -60,7 +61,7 @@ function NotificationsSetting() {
     off: "Activalas para enterarte de mensajes nuevos con la app cerrada. Los avisos son discretos: no dicen quién te escribió ni qué.",
     denied: "Bloqueaste las notificaciones para este sitio. Habilitalas en los ajustes del navegador.",
     unsupported: "Este navegador no permite notificaciones.",
-    "ios-install": "En iPhone, primero agregá mortero a la pantalla de inicio (Compartir → Agregar a inicio) y abrila desde ahí.",
+    "ios-install": `En iPhone, primero agregá ${APP_NAME} a la pantalla de inicio (Compartir → Agregar a inicio) y abrila desde ahí.`,
     disabled: "",
   };
 
@@ -211,7 +212,7 @@ export function MyProfile() {
 
       {isNew && (
         <div className="notice notice--info welcome">
-          ¡Bienvenide a mortero! Subí una foto y completá lo que quieras. Todo es opcional y lo podés cambiar cuando quieras.
+          ¡Bienvenide a {APP_NAME}! Subí una foto y completá lo que quieras. Todo es opcional y lo podés cambiar cuando quieras.
         </div>
       )}
 
@@ -410,7 +411,7 @@ export function MyProfile() {
           )}
         </div>
         <p className="fineprint">
-          mortero es software libre (AGPL-3.0), hecho en comunidad.
+          {APP_NAME} es software libre (AGPL-3.0), hecho en comunidad.
         </p>
       </section>
     </div>

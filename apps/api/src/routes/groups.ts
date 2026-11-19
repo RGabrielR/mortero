@@ -9,6 +9,7 @@ import { authorsFor, blockedWith, newId, requireProfile, requireUser, type AppEn
 import { emitToGroup, emitToUser, serializeGroupMessages, syncGroupRoom } from "../realtime.js";
 import { pushTo } from "../push.js";
 import { notifyGroupMessage } from "../groupNotify.js";
+import { APP_NAME } from "../brand.js";
 
 const { group, groupMember, groupMessage, groupJoinRequest } = schema;
 
@@ -267,7 +268,7 @@ groupRoutes.post("/groups/:id/requests", async (c) => {
   await db.insert(groupJoinRequest).values({ id, groupId: g.id, userId: u.id, message: message || null });
   const mods = await notifyMods(g.id, "group:request", { groupId: g.id });
   for (const m of mods) {
-    pushTo(m, { title: "mortero", body: "Tenés una solicitud nueva en un grupo", url: `/grupos/${g.id}/info`, tag: `req-${g.id}` }).catch(() => {});
+    pushTo(m, { title: APP_NAME, body: "Tenés una solicitud nueva en un grupo", url: `/grupos/${g.id}/info`, tag: `req-${g.id}` }).catch(() => {});
   }
   return c.json({ id });
 });
@@ -324,7 +325,7 @@ groupRoutes.post("/groups/:id/requests/:rid/:decision{accept|reject}", async (c)
     syncGroupRoom(req.userId, g.id, true);
     emitToUser(req.userId, "group:accepted", { groupId: g.id, name: g.name });
     {
-      pushTo(req.userId, { title: "mortero", body: "Te aceptaron en un grupo", url: `/grupos/${g.id}`, tag: `acc-${g.id}` }).catch(() => {});
+      pushTo(req.userId, { title: APP_NAME, body: "Te aceptaron en un grupo", url: `/grupos/${g.id}`, tag: `acc-${g.id}` }).catch(() => {});
     }
   } else {
     emitToUser(req.userId, "group:rejected", { groupId: g.id, name: g.name });

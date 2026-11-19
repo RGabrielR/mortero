@@ -10,6 +10,7 @@ import { deleteImage, MAX_UPLOAD_BYTES, readImage, saveImage } from "../storage.
 import { googleEnabled } from "../auth.js";
 import { hasAlbumAccess } from "./premium.js";
 import { isAdminEmail } from "./admin.js";
+import { APP_NAME } from "../brand.js";
 
 const { profile, photo, user, group, groupMember, directMessage, conversation } = schema;
 const MAX_PHOTOS = 6;
@@ -88,7 +89,7 @@ meRoutes.put("/me/profile", requireUser, async (c) => {
   if (!existing) {
     // Alta del perfil: acá se verifica la edad
     if (!data.birthdate) throw new HTTPException(400, { message: "Falta la fecha de nacimiento" });
-    if (ageFrom(data.birthdate) < 18) throw new HTTPException(403, { message: "mortero es solo para mayores de 18" });
+    if (ageFrom(data.birthdate) < 18) throw new HTTPException(403, { message: `${APP_NAME} es solo para mayores de 18` });
     await db.insert(profile).values({ ...data, birthdate: data.birthdate, userId: u.id });
     // Todo el mundo entra al chat general
     const [general] = await db.select().from(group).where(eq(group.isGeneral, true));

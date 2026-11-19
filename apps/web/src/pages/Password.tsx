@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { authClient } from "../api";
+import { Wordmark } from "../components/Wordmark";
 
 /** Pedir el mail para recuperar la contraseña. */
 export function ForgotPassword() {
@@ -23,7 +24,7 @@ export function ForgotPassword() {
   return (
     <div className="auth">
       <div className="auth__hero">
-        <h1 className="wordmark wordmark--big">mortero</h1>
+        <Wordmark big />
       </div>
       <div className="auth__card">
         <h2 className="auth__title">Recuperar contraseña</h2>
@@ -75,7 +76,7 @@ export function ResetPassword() {
   return (
     <div className="auth">
       <div className="auth__hero">
-        <h1 className="wordmark wordmark--big">mortero</h1>
+        <Wordmark big />
       </div>
       <div className="auth__card">
         <h2 className="auth__title">Contraseña nueva</h2>

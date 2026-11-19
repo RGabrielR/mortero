@@ -2,6 +2,7 @@ import { and, eq, inArray, ne } from "drizzle-orm";
 import { db, schema } from "./db/index.js";
 import { blockedWith } from "./lib.js";
 import { pushTo } from "./push.js";
+import { APP_NAME } from "./brand.js";
 
 const { groupMember, groupMessage, pushSubscription } = schema;
 
@@ -45,12 +46,12 @@ export async function notifyGroupMessage(msg: typeof groupMessage.$inferSelect) 
     const key = `${m.userId}:${msg.groupId}`;
     if (m.userId === repliedTo) {
       lastGroupPush.set(key, now);
-      pushTo(m.userId, { title: "mortero", body: "Te respondieron en un grupo", url, tag: `grp-${msg.groupId}` }).catch(() => {});
+      pushTo(m.userId, { title: APP_NAME, body: "Te respondieron en un grupo", url, tag: `grp-${msg.groupId}` }).catch(() => {});
       continue;
     }
     if (m.muted) continue;
     if (now - (lastGroupPush.get(key) ?? 0) < GROUP_PUSH_EVERY_MS) continue;
     lastGroupPush.set(key, now);
-    pushTo(m.userId, { title: "mortero", body: "Hay mensajes nuevos en un grupo", url, tag: `grp-${msg.groupId}` }).catch(() => {});
+    pushTo(m.userId, { title: APP_NAME, body: "Hay mensajes nuevos en un grupo", url, tag: `grp-${msg.groupId}` }).catch(() => {});
   }
 }

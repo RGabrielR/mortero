@@ -9,6 +9,7 @@ import { HTTPException } from "hono/http-exception";
 import { auth } from "./auth.js";
 import { db, runMigrations, schema } from "./db/index.js";
 import { env } from "./env.js";
+import { APP_NAME } from "./brand.js";
 import type { AppEnv } from "./lib.js";
 import { attachRealtime } from "./realtime.js";
 import { groupRoutes } from "./routes/groups.js";
@@ -64,6 +65,6 @@ app.onError((err, c) => {
 });
 
 const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
-  console.log(`mortero API escuchando en http://localhost:${info.port}`);
+  console.log(`${APP_NAME} API escuchando en http://localhost:${info.port}`);
 });
 attachRealtime(server as HttpServer);

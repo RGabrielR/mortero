@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { APP_NAME } from "../brand";
 
 // Chrome/Android avisa que la app se puede instalar con este evento. Lo guardamos apenas carga la página,
 // porque puede llegar antes de que se monte el componente.
@@ -66,7 +67,7 @@ export function InstallBanner() {
     <div className="notice install">
       <img src="/icon-192.png" alt="" className="install__icon" />
       <div className="install__text">
-        <p><b>Instalá mortero</b></p>
+        <p><b>Instalá {APP_NAME}</b></p>
         {ios ? (
           <p className="muted small">En Safari, tocá <b>Compartir</b> y después <b>Agregar a inicio</b>. Así se abre como una app y te llegan los avisos.</p>
         ) : (
