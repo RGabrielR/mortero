@@ -464,8 +464,9 @@ const candidatesQuery = z.object({
   ageMax: z.coerce.number().int().min(18).max(99).optional(),
   online: z.enum(["1"]).optional(),
   withPhoto: z.enum(["1"]).optional(),
-  // Solo gente que conocés: con la que charlaste o tus favoritos
-  known: z.enum(["1"]).optional(),
+  // Solo gente con la que ya chateaste / solo tus favoritos
+  chatted: z.enum(["1"]).optional(),
+  favorites: z.enum(["1"]).optional(),
   // Por defecto no se muestra a quien ya está en el grupo
   showMembers: z.enum(["1"]).optional(),
   offset: z.coerce.number().int().min(0).max(5000).default(0),
@@ -475,7 +476,7 @@ const CANDIDATES_PAGE = 60;
 /**
  * Gente para invitar a un grupo (dueño y moderadores): la lista larga, como la grilla de Gente,
  * de la más cercana a la más lejana. Se puede buscar por nombre y filtrar por distancia, edad, en línea,
- * con foto y "gente que conocés". Quien está en incógnito solo aparece si la buscás por nombre.
+ * con foto, "ya chateamos" y favoritos. Quien está en incógnito solo aparece si la buscás por nombre.
  */
 groupRoutes.get("/groups/:id/invite-candidates", async (c) => {
   const u = c.get("user");
@@ -490,17 +491,21 @@ groupRoutes.get("/groups/:id/invite-candidates", async (c) => {
   const rows = await db.select().from(schema.profile).where(and(...conds)).orderBy(desc(schema.profile.lastSeenAt)).limit(3000);
 
   const blocked = await blockedWith(u.id);
-  let known: Set<string> | null = null;
-  if (f.known) {
+  let chatted: Set<string> | null = null;
+  if (f.chatted) {
     const convs = await db.select({ a: schema.conversation.userA, b: schema.conversation.userB }).from(schema.conversation)
       .where(or(eq(schema.conversation.userA, u.id), eq(schema.conversation.userB, u.id)));
+    chatted = new Set(convs.map((r) => (r.a === u.id ? r.b : r.a)));
+  }
+  let favorites: Set<string> | null = null;
+  if (f.favorites) {
     const favs = await db.select({ id: schema.favorite.favoriteId }).from(schema.favorite).where(eq(schema.favorite.userId, u.id));
-    known = new Set([...convs.map((r) => (r.a === u.id ? r.b : r.a)), ...favs.map((r) => r.id)]);
+    favorites = new Set(favs.map((r) => r.id));
   }
 
   const meHasLoc = me.cellLat != null && me.cellLng != null;
   let list = rows
-    .filter((p) => !blocked.has(p.userId) && (!known || known.has(p.userId)))
+    .filter((p) => !blocked.has(p.userId) && (!chatted || chatted.has(p.userId)) && (!favorites || favorites.has(p.userId)))
     .map((p) => {
       const km = meHasLoc && p.cellLat != null && p.cellLng != null ? distanceKm(me.cellLat!, me.cellLng!, p.cellLat, p.cellLng) : null;
       return { p, km, age: ageFrom(p.birthdate), online: !p.incognito && isOnline(p.userId) };

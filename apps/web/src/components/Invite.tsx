@@ -39,8 +39,8 @@ const DISTANCES: { km: number | null; label: string }[] = [
   { km: 200, label: "200 km" },
 ];
 
-type CandidateFilters = { maxKm: number | null; online: boolean; withPhoto: boolean; known: boolean; showMembers: boolean; ageMin: string; ageMax: string };
-const NO_FILTERS: CandidateFilters = { maxKm: null, online: false, withPhoto: false, known: false, showMembers: false, ageMin: "", ageMax: "" };
+type CandidateFilters = { maxKm: number | null; online: boolean; withPhoto: boolean; chatted: boolean; favorites: boolean; showMembers: boolean; ageMin: string; ageMax: string };
+const NO_FILTERS: CandidateFilters = { maxKm: null, online: false, withPhoto: false, chatted: false, favorites: false, showMembers: false, ageMin: "", ageMax: "" };
 
 function candidatesUrl(groupId: string, q: string, f: CandidateFilters, offset: number) {
   const p = new URLSearchParams();
@@ -48,7 +48,8 @@ function candidatesUrl(groupId: string, q: string, f: CandidateFilters, offset: 
   if (f.maxKm != null) p.set("maxKm", String(f.maxKm));
   if (f.online) p.set("online", "1");
   if (f.withPhoto) p.set("withPhoto", "1");
-  if (f.known) p.set("known", "1");
+  if (f.chatted) p.set("chatted", "1");
+  if (f.favorites) p.set("favorites", "1");
   if (f.showMembers) p.set("showMembers", "1");
   if (f.ageMin) p.set("ageMin", f.ageMin);
   if (f.ageMax) p.set("ageMax", f.ageMax);
@@ -58,7 +59,7 @@ function candidatesUrl(groupId: string, q: string, f: CandidateFilters, offset: 
 
 /**
  * Desde la info de un grupo: la lista larga de gente para invitar, de la más cercana a la más lejana,
- * con búsqueda por nombre y filtros (distancia, en línea, edad, con foto, gente que conocés).
+ * con búsqueda por nombre y filtros (distancia, en línea, ya chateamos, favoritos, con foto, edad).
  */
 export function InvitePeopleSheet({ groupId, groupName, onClose, onChange }: {
   groupId: string;
@@ -133,7 +134,8 @@ export function InvitePeopleSheet({ groupId, groupName, onClose, onChange }: {
         </div>
         <div className="invite-filters" role="group" aria-label="Filtros">
           <button type="button" className={`chip ${f.online ? "chip--on" : ""}`} aria-pressed={f.online} onClick={() => set("online", !f.online)}>En línea</button>
-          <button type="button" className={`chip ${f.known ? "chip--on" : ""}`} aria-pressed={f.known} onClick={() => set("known", !f.known)}>Gente que conocés</button>
+          <button type="button" className={`chip ${f.chatted ? "chip--on" : ""}`} aria-pressed={f.chatted} onClick={() => set("chatted", !f.chatted)}>Ya chateamos</button>
+          <button type="button" className={`chip ${f.favorites ? "chip--on" : ""}`} aria-pressed={f.favorites} onClick={() => set("favorites", !f.favorites)}>Favoritos</button>
           <button type="button" className={`chip ${f.withPhoto ? "chip--on" : ""}`} aria-pressed={f.withPhoto} onClick={() => set("withPhoto", !f.withPhoto)}>Con foto</button>
           <button type="button" className={`chip ${moreFilters ? "chip--on" : ""}`} aria-expanded={moreFilters} onClick={() => setMoreFilters(!moreFilters)}>Más filtros</button>
         </div>
