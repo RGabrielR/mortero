@@ -4,6 +4,8 @@
 
 Bienvenide a qule.ar. Al crear tu cuenta aceptás estos términos y la [Política de privacidad](/privacidad). Los escribimos en criollo para que se entiendan.
 
+> **En corto:** qule.ar está en **beta**. Te registrás y la usás **bajo tu propia responsabilidad**. Quienes la desarrollamos respondemos **solo por el funcionamiento del servicio de la app**: no por lo que hagan otras personas, ni por lo que pase en un encuentro, ni por lo que publiques vos. Leé todo antes de aceptar.
+
 ## 1. Qué es qule.ar
 
 qule.ar es una app comunitaria, gratuita y de código abierto para conocer gente y charlar en grupos. La hace un grupo de personas voluntarias, no una empresa, y el código está publicado en [GitHub](https://github.com/RGabrielR/qule.ar) bajo la licencia AGPL-3.0.
@@ -20,7 +22,7 @@ qule.ar es una app comunitaria, gratuita y de código abierto para conocer gente
 - A veces te vamos a pedir que vuelvas a activar algo, como las notificaciones, cuando cambiamos cosas por dentro.
 - Estos términos también están en construcción y los vamos a ir completando.
 
-La usás tal como está, sabiendo que es una versión de prueba.
+**Te registrás y usás qule.ar bajo tu propia responsabilidad**, tal como está y sabiendo que es una versión de prueba.
 
 ## 3. Quién puede usarla
 
@@ -66,11 +68,12 @@ qule.ar sirve para conocer gente, y a veces eso termina en un encuentro. **No ve
 
 ## 8. Hasta dónde llega nuestra responsabilidad
 
-Hacemos lo posible para que qule.ar ande bien y sea segura, pero:
+**Las personas que desarrollamos qule.ar respondemos solamente por el servicio de la app**: que funcione lo mejor posible y que tus datos se traten como dice la [Política de privacidad](/privacidad). Nada más. En particular:
 
 - Es una **beta gratuita**: no garantizamos que funcione siempre, sin errores ni sin cortes.
 - **No respondemos por lo que hacen otras personas**, dentro o fuera de la app, ni por lo que pase en un encuentro.
 - No respondemos por la veracidad de lo que cada persona pone en su perfil.
+- No respondemos por lo que vos publicás ni por cómo usás la app: eso es responsabilidad tuya.
 - No respondemos por daños causados por cortes, errores o pérdida de datos propios de una versión de prueba, salvo en los casos en que la ley no permite limitar esta responsabilidad, como el dolo o la culpa grave.
 
 Nada de esto limita los derechos que te dan la Ley de Defensa del Consumidor (24.240), el Código Civil y Comercial ni la Ley de Protección de Datos Personales (25.326).

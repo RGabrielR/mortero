@@ -4,6 +4,7 @@ import { api, authClient } from "../api";
 import { useMe } from "../App";
 import { Wordmark } from "../components/Wordmark";
 import { Logo } from "../components/Logo";
+import { APP_NAME } from "../brand";
 import { GoogleMark } from "../components/GoogleMark";
 
 export function Login() {
@@ -94,8 +95,8 @@ export function Login() {
           </button>
         </form>
         <p className="fineprint">
-          Solo para mayores de 18. Al seguir aceptás tratar a los demás con respeto. Estamos en beta: leé los{" "}
-          <Link to="/terminos">Términos</Link> y la <Link to="/privacidad">Política de privacidad</Link>.
+          Solo para mayores de 18. {APP_NAME} está en beta: la usás bajo tu propia responsabilidad. Al registrarte vas a
+          leer y aceptar los <Link to="/terminos">Términos</Link> y la <Link to="/privacidad">Política de privacidad</Link>.
         </p>
       </div>
     </div>

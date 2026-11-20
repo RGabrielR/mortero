@@ -5,6 +5,8 @@ import { useMe } from "../App";
 import { APP_NAME } from "../brand";
 import { Wordmark } from "../components/Wordmark";
 import { Logo } from "../components/Logo";
+import { Markdown } from "../components/Markdown";
+import terminos from "../legal/terminos.md?raw";
 
 function maxBirthdate() {
   const d = new Date();
@@ -19,6 +21,9 @@ export function Onboarding() {
   const [birthdate, setBirthdate] = useState("");
   const [adult, setAdult] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  // Los términos se leen acá mismo; el tilde de aceptarlos se habilita recién cuando se abren
+  const [showTerms, setShowTerms] = useState(false);
+  const [openedTerms, setOpenedTerms] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -58,11 +63,39 @@ export function Onboarding() {
           <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
           <span>Confirmo que tengo 18 años o más.</span>
         </label>
-        <label className="check">
-          <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
+        <div className="beta-notice" role="note">
+          <p className="beta-notice__title">Antes de entrar, leé esto</p>
+          <ul className="beta-notice__list">
+            <li>{APP_NAME} está en <b>beta</b>: puede fallar, cambiar o perder datos.</li>
+            <li>Te registrás y la usás <b>bajo tu propia responsabilidad</b>.</li>
+            <li>
+              Quienes la desarrollamos respondemos <b>solo por el funcionamiento de la app</b>, no por lo que hagan otras
+              personas ni por lo que pase fuera de ella.
+            </li>
+          </ul>
+          <button
+            type="button"
+            className="btn btn--ghost btn--small"
+            aria-expanded={showTerms}
+            onClick={() => {
+              setShowTerms((v) => !v);
+              setOpenedTerms(true);
+            }}
+          >
+            {showTerms ? "Ocultar los términos" : "Leer los Términos y condiciones"}
+          </button>
+          {showTerms && (
+            <div className="beta-notice__terms legal__body" tabIndex={0} aria-label="Términos y condiciones">
+              <Markdown source={terminos} />
+            </div>
+          )}
+        </div>
+        <label className={`check ${openedTerms ? "" : "check--disabled"}`}>
+          <input type="checkbox" disabled={!openedTerms} checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
           <span>
-            Leí y acepto los <Link to="/terminos" target="_blank">Términos</Link> y la{" "}
-            <Link to="/privacidad" target="_blank">Política de privacidad</Link>. Sé que {APP_NAME} está en beta.
+            Leí los Términos y condiciones y la <Link to="/privacidad" target="_blank">Política de privacidad</Link>, y los
+            acepto. Entiendo que {APP_NAME} está en beta y que la uso bajo mi propia responsabilidad.
+            {!openedTerms && <small className="muted check__hint">Para aceptarlos, primero abrí los términos.</small>}
           </span>
         </label>
         {error && <p className="error" role="alert">{error}</p>}

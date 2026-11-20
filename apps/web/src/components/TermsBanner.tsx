@@ -37,7 +37,9 @@ export function TermsBanner() {
         <span className="muted small">
           {isUpdate ? "Leé los cambios en los " : "Sumamos los "}
           <Link to="/terminos">Términos</Link> y la <Link to="/privacidad">Política de privacidad</Link>
-          {isUpdate ? "." : ": qué guardamos, dónde y qué podés pedir sobre tus datos."}
+          {isUpdate
+            ? "."
+            : ": la usás bajo tu propia responsabilidad y respondemos solo por el funcionamiento de la app. También dicen qué datos guardamos y dónde."}
         </span>
         {error && <span className="error small" role="alert">{error}</span>}
       </div>
