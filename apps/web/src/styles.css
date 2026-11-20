@@ -504,3 +504,45 @@ button.quote:hover { background: var(--surface-3); }
 .invite-count { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: none; }
 .invite-who { display: flex; flex-direction: column; line-height: 1.25; }
 .invite-who .dot { display: inline-block; vertical-align: middle; margin-right: 4px; }
+
+/* Marca "beta" al lado del nombre, mientras la app esté en prueba */
+.beta {
+  display: inline-block; vertical-align: super; margin-left: 0.1em;
+  font-family: var(--font); font-size: var(--text-2xs); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  line-height: 1; padding: 3px 6px; border-radius: var(--radius-pill);
+  color: var(--accent); background: var(--accent-soft);
+}
+.wordmark--big .beta { font-size: var(--text-sm); padding: 4px 8px; }
+
+/* Términos y privacidad */
+.legal { min-height: 100%; max-width: 680px; margin: 0 auto; padding: 0 16px 48px; }
+.legal__top {
+  position: sticky; top: 0; z-index: var(--z-sticky); display: flex; align-items: center; gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 0 10px; background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.legal__top .wordmark { font-size: var(--title-sm); }
+.legal__body { line-height: 1.6; overflow-wrap: anywhere; }
+.legal__body h1 { font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; font-size: var(--title-2xl); line-height: 1.15; margin: 28px 0 8px; }
+.legal__body h2 { font-family: var(--display); font-weight: 600; font-size: var(--title-xs); margin: 32px 0 8px; }
+.legal__body p { margin: 0 0 12px; }
+.legal__body ul { margin: 0 0 12px; padding-left: 22px; display: grid; gap: 6px; }
+.legal__body ul ul { margin: 6px 0 0; }
+.legal__body a { color: var(--accent-2); }
+.legal__body strong { color: var(--text); }
+.legal__body blockquote {
+  margin: 16px 0; padding: 12px 14px; border-left: 3px solid var(--line); border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--surface); color: var(--muted); font-size: var(--text-sm);
+}
+.legal__foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; }
+.legal__foot a, .fineprint a { color: var(--accent-2); }
+
+/* Aviso de la beta en la bienvenida, con los términos desplegables */
+.beta-notice { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius-xl); background: var(--accent-soft); border: 1px solid var(--accent-line); }
+.beta-notice__title { font-family: var(--display); font-weight: 600; font-size: var(--text-lg); color: var(--text); }
+.beta-notice__list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: var(--text-md); color: var(--text); }
+.beta-notice .btn { align-self: flex-start; }
+.beta-notice__terms { max-height: 46vh; overflow-y: auto; padding: 4px 12px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line); font-size: var(--text-md); }
+.beta-notice__terms h1 { font-size: var(--title-xs); margin-top: 12px; }
+.beta-notice__terms h2 { font-size: var(--text-lg); margin-top: 20px; }
+.check--disabled { color: var(--muted); }
+.check__hint { display: block; margin-top: 4px; }

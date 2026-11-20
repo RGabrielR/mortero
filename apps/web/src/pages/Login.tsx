@@ -4,7 +4,7 @@ import { api, authClient } from "../api";
 import { useMe } from "../App";
 import { Wordmark } from "../components/Wordmark";
 import { Logo } from "../components/Logo";
-import { APP_SLOGAN } from "../brand";
+import { APP_NAME, APP_SLOGAN } from "../brand";
 import { GoogleMark } from "../components/GoogleMark";
 
 export function Login() {
@@ -95,7 +95,10 @@ export function Login() {
             {busy ? "Un toque…" : mode === "up" ? "Crear cuenta" : "Entrar"}
           </button>
         </form>
-        <p className="fineprint">Solo para mayores de 18. Al seguir aceptás tratar a los demás con respeto.</p>
+        <p className="fineprint">
+          Solo para mayores de 18. {APP_NAME} está en beta: la usás bajo tu propia responsabilidad. Al registrarte vas a
+          leer y aceptar los <Link to="/terminos">Términos</Link> y la <Link to="/privacidad">Política de privacidad</Link>.
+        </p>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import { hasAlbumAccess } from "./premium.js";
 import { isAdmin } from "./admin.js";
 import { APP_NAME } from "../brand.js";
 import { expiringIsOver } from "../expiring.js";
+import { TERMS_VERSION } from "../legal.js";
 
 const { profile, photo, user, group, groupMember, directMessage, conversation } = schema;
 const MAX_PHOTOS = 6;
@@ -33,6 +34,8 @@ const profileInput = z.object({
   pronouns: shortText.nullish(),
   hivStatus: shortText.nullish(),
   lastTested: z.iso.date().nullish(),
+  // Solo cuenta en el alta del perfil
+  acceptTerms: z.boolean().optional(),
 });
 
 export const meRoutes = new Hono<AppEnv>();
@@ -121,10 +124,18 @@ meRoutes.put("/me/profile", requireUser, async (c) => {
   const data = parsed.data;
 
   if (!existing) {
-    // Alta del perfil: acá se verifica la edad
+    // Alta del perfil: acá se verifica la edad y se registra la aceptación de los términos
     if (!data.birthdate) throw new HTTPException(400, { message: "Falta la fecha de nacimiento" });
     if (ageFrom(data.birthdate) < 18) throw new HTTPException(403, { message: `${APP_NAME} es solo para mayores de 18` });
-    await db.insert(profile).values({ ...data, birthdate: data.birthdate, userId: u.id });
+    if (data.acceptTerms !== true) throw new HTTPException(400, { message: "Para entrar tenés que aceptar los términos y la política de privacidad" });
+    const { acceptTerms: _accepted, ...fields } = data;
+    await db.insert(profile).values({
+      ...fields,
+      birthdate: data.birthdate,
+      userId: u.id,
+      termsVersion: TERMS_VERSION,
+      termsAcceptedAt: new Date(),
+    });
     // Todo el mundo entra al chat general
     const [general] = await db.select().from(group).where(eq(group.isGeneral, true));
     if (general) {
@@ -133,10 +144,22 @@ meRoutes.put("/me/profile", requireUser, async (c) => {
     }
   } else {
     // La fecha de nacimiento no se puede cambiar después del alta
-    const { birthdate: _ignored, ...rest } = data;
+    const { birthdate: _ignored, acceptTerms: _a, ...rest } = data;
     await db.update(profile).set({ ...rest, updatedAt: new Date() }).where(eq(profile.userId, u.id));
   }
   return c.json({ ok: true });
+});
+
+/** Aceptar la versión vigente de los términos (para cuentas creadas antes, o cuando cambian). */
+meRoutes.put("/me/terms", requireUser, requireProfile, async (c) => {
+  const u = c.get("user");
+  const parsed = z.object({ version: z.string() }).safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) throw new HTTPException(400, { message: "Falta la versión de los términos" });
+  const { version } = parsed.data;
+  // Solo se puede aceptar la versión vigente: si la web quedó vieja, que recargue y lea la nueva
+  if (version !== TERMS_VERSION) throw new HTTPException(409, { message: "Los términos cambiaron. Recargá la página para leer la versión nueva." });
+  await db.update(profile).set({ termsVersion: TERMS_VERSION, termsAcceptedAt: new Date() }).where(eq(profile.userId, u.id));
+  return c.json({ termsVersion: TERMS_VERSION });
 });
 
 /** Hasta cuántas fotos y videos puede tener el álbum privado. */

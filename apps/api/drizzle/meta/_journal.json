@@ -71,6 +71,13 @@
       "when": 1795201283747,
       "tag": "0009_toques_reacciones",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795203988751,
+      "tag": "0010_terms_acceptance",
+      "breakpoints": true
     }
   ]
 }

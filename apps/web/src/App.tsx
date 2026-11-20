@@ -5,6 +5,8 @@ import { Admin } from "./pages/Admin";
 import { Login } from "./pages/Login";
 import { NotifyBanner } from "./components/NotifyBanner";
 import { UpdateBanner } from "./components/UpdateBanner";
+import { TermsBanner } from "./components/TermsBanner";
+import { Legal } from "./pages/Legal";
 import { Wordmark } from "./components/Wordmark";
 import { Logo } from "./components/Logo";
 import { APP_NAME } from "./brand";
@@ -54,6 +56,9 @@ export function App() {
         <Route path="/entrar" element={me ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/recuperar" element={<ForgotPassword />} />
         <Route path="/nueva-clave" element={<ResetPassword />} />
+        {/* Públicas: se leen con o sin cuenta (y también si la cuenta está suspendida) */}
+        <Route path="/terminos" element={<Legal doc="terminos" />} />
+        <Route path="/privacidad" element={<Legal doc="privacidad" />} />
         <Route path="/bienvenida" element={<RequireAuth><Onboarding /></RequireAuth>} />
         <Route element={<RequireAuth needProfile><Shell /></RequireAuth>}>
           <Route path="/" element={<Navigate to="/cerca" replace />} />
@@ -196,6 +201,7 @@ function Shell() {
       <main className="shell__main">
         <Outlet />
       </main>
+      {!inThread && <TermsBanner />}
       {!inThread && <NotifyBanner />}
       {toast && (
         <div className="toast" role="status" key={toast.id}>
