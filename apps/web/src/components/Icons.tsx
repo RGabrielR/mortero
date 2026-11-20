@@ -33,8 +33,8 @@ export const GridIcon = () => (
 export const FilterIcon = () => (
   <svg {...base} width={16} height={16}><path d="M4 6h16M7 12h10M10 18h4" /></svg>
 );
-export const PinIcon = () => (
-  <svg {...base} width={28} height={28}><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+export const PinIcon = ({ size = 28 }: { size?: number }) => (
+  <svg {...base} width={size} height={size}><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
 );
 export const StarIcon = ({ filled = false, size = 20 }: { filled?: boolean; size?: number }) => (
   <svg {...base} width={size} height={size} fill={filled ? "currentColor" : "none"}><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" /></svg>

@@ -26,13 +26,20 @@ nearbyRoutes.use("/me/privacy", requireUser, requireProfile);
 const MAX_CELL_CHANGES_PER_HOUR = 20;
 const cellChanges = new Map<string, number[]>();
 
-/** Guarda la ubicación redondeada a la celda. La posición exacta no se guarda ni se loguea. */
+/**
+ * Guarda la ubicación redondeada a la celda. La posición exacta no se guarda ni se loguea.
+ * `auto`: la manda la app sola para mantenerla al día. Si la persona borró su ubicación, se ignora:
+ * volver a aparecer en la grilla siempre lo decide ella, tocando "Compartir".
+ */
 nearbyRoutes.put("/me/location", async (c) => {
   const u = c.get("user");
-  const r = z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).safeParse(await c.req.json());
+  const r = z
+    .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), auto: z.boolean().optional() })
+    .safeParse(await c.req.json());
   if (!r.success) throw new HTTPException(400, { message: "Ubicación inválida" });
-  const cell = snapToCell(r.data.lat, r.data.lng);
   const me = c.get("profile")!;
+  if (r.data.auto && (me.cellLat == null || me.cellLng == null)) return c.json({ ok: true });
+  const cell = snapToCell(r.data.lat, r.data.lng);
   if (me.cellLat !== cell.lat || me.cellLng !== cell.lng) {
     const hourAgo = Date.now() - 3_600_000;
     const recent = (cellChanges.get(u.id) ?? []).filter((t) => t > hourAgo);

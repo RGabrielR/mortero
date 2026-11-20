@@ -22,6 +22,7 @@ import { MyProfile } from "./pages/MyProfile";
 import { ChatIcon, GridIcon, GroupIcon, UserIcon } from "./components/Icons";
 import { Nearby } from "./pages/Nearby";
 import { Favorites, Toques, Views } from "./pages/People";
+import { useLocationSync } from "./location";
 
 type MeState = { me: Me | null; loading: boolean; reload: () => Promise<void> };
 const MeContext = createContext<MeState>({ me: null, loading: true, reload: async () => {} });
@@ -127,6 +128,10 @@ function Shell() {
   const [pending, setPending] = useState(0);
   const [toast, setToast] = useState<Toast | null>(null);
   const loc = useLocation();
+  const { me } = useMe();
+
+  // Si compartiste tu ubicación, se mantiene al día mientras usás la app (por si te moviste o te fuiste de viaje)
+  useLocationSync(!!me?.profile?.hasLocation);
 
   // Solicitudes pendientes en grupos que modero + avisos de grupos
   useEffect(() => {

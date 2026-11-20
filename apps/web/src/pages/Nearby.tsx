@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { api, type NearbyPerson } from "../api";
 import { useMe } from "../App";
 import { FilterIcon, PinIcon, StarIcon } from "../components/Icons";
+import { LOCATION_EVENT, shareLocation } from "../location";
 import { BODY_TYPES, LOOKING_FOR, POSITIONS, RELATIONSHIP, TRIBES } from "../options";
 
 export type Filters = {
@@ -72,7 +73,9 @@ export function Nearby() {
   const [status, setStatus] = useState<Status>("loading");
   const [loc, setLoc] = useState<LocState>("ok");
   const [showFilters, setShowFilters] = useState(false);
-  const locationSent = useRef(false);
+  const [updating, setUpdating] = useState<"idle" | "busy" | "done">("idle");
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
   const load = useCallback(async (f: Filters, offset = 0) => {
     try {
@@ -87,35 +90,36 @@ export function Nearby() {
   }, []);
 
   /** Pide la ubicación al navegador y manda solo lat/lng; el servidor la redondea a ~500 m. */
-  const shareLocation = useCallback(
-    (silent = false) => {
-      if (!("geolocation" in navigator)) return setLoc("unsupported");
-      if (!silent) setLoc("asking");
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          locationSent.current = true;
-          await api("/me/location", { method: "PUT", json: { lat: pos.coords.latitude, lng: pos.coords.longitude } }).catch(() => {});
-          if (!me?.profile?.hasLocation) reload();
-          load(filters);
-        },
-        () => {
-          if (!silent) setLoc("denied");
-        },
-        { enableHighAccuracy: false, maximumAge: 10 * 60_000, timeout: 15_000 },
-      );
-    },
-    [filters, load, me?.profile?.hasLocation, reload],
-  );
+  async function share() {
+    setLoc("asking");
+    const r = await shareLocation();
+    if (r === "ok") {
+      setLoc("ok");
+      if (!me?.profile?.hasLocation) reload();
+    } else {
+      setLoc(r === "error" ? "none" : r);
+    }
+  }
+
+  /** Botón de la barra: vuelve a tomar la ubicación ahora (por si te moviste). */
+  async function update() {
+    setUpdating("busy");
+    const r = await shareLocation();
+    if (r === "ok") {
+      setUpdating("done");
+      setTimeout(() => setUpdating("idle"), 2500);
+    } else {
+      setUpdating("idle");
+      if (r !== "error") setLoc(r);
+    }
+  }
 
   useEffect(() => {
     load(filters);
-    // Si ya diste permiso antes, actualizamos la ubicación sin preguntar
-    if (!locationSent.current && "permissions" in navigator) {
-      navigator.permissions
-        .query({ name: "geolocation" as PermissionName })
-        .then((p) => p.state === "granted" && shareLocation(true))
-        .catch(() => {});
-    }
+    // Cada vez que se manda una ubicación nueva (a mano o sola), la grilla se reordena
+    const onLocation = () => load(filtersRef.current);
+    window.addEventListener(LOCATION_EVENT, onLocation);
+    return () => window.removeEventListener(LOCATION_EVENT, onLocation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -133,13 +137,28 @@ export function Nearby() {
       <header className="topbar">
         <h1 className="topbar__title">Gente</h1>
         {status === "ready" && (
-          <button className={`btn btn--small ${active ? "btn--primary" : ""}`} onClick={() => setShowFilters(true)}>
-            <FilterIcon /> Filtros{active ? ` · ${active}` : ""}
-          </button>
+          <div className="topbar__actions">
+            {loc === "ok" && me?.profile?.hasLocation && (
+              <button
+                className={`iconbtn ${updating === "busy" ? "iconbtn--busy" : updating === "done" ? "iconbtn--done" : ""}`}
+                disabled={updating === "busy"}
+                onClick={update}
+                aria-label="Actualizar mi ubicación"
+                title="Actualizar mi ubicación"
+              >
+                <PinIcon size={20} />
+              </button>
+            )}
+            <button className={`btn btn--small ${active ? "btn--primary" : ""}`} onClick={() => setShowFilters(true)}>
+              <FilterIcon /> Filtros{active ? ` · ${active}` : ""}
+            </button>
+          </div>
         )}
       </header>
 
       <InstallBanner />
+
+      <p className="sr-only" aria-live="polite">{updating === "done" ? "Ubicación actualizada" : ""}</p>
 
       {status === "ready" && loc !== "ok" && (
         <div className="notice locate-bar">
@@ -151,7 +170,7 @@ export function Nearby() {
             {loc === "unsupported" && <p className="error">Este navegador no permite compartir la ubicación.</p>}
           </div>
           {loc !== "unsupported" && (
-            <button className="btn btn--small btn--primary" disabled={loc === "asking"} onClick={() => shareLocation()}>
+            <button className="btn btn--small btn--primary" disabled={loc === "asking"} onClick={share}>
               {loc === "asking" ? "Buscando…" : "Compartir"}
             </button>
           )}
