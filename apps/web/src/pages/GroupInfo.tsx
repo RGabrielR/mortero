@@ -71,7 +71,7 @@ export function GroupInfo() {
 
       <section className="section">
         {info.description && <p className="profile__about">{info.description}</p>}
-        <p className="muted small" style={{ marginTop: 8 }}>
+        <p className="muted small hint">
           {info.memberCount} {info.memberCount === 1 ? "miembro" : "miembros"} · Tu rol: {ROLE_LABEL[info.role!]}
         </p>
       </section>
@@ -79,7 +79,7 @@ export function GroupInfo() {
       <section className="section">
         <div className="setting">
           <div>
-            <h2 className="section__title" style={{ marginBottom: 4 }}>Avisos de este grupo</h2>
+            <h2 className="section__title section__title--tight">Avisos de este grupo</h2>
             <p className="muted small">
               {info.muted
                 ? "Silenciado: solo te avisamos si alguien te responde."
@@ -126,7 +126,7 @@ export function GroupInfo() {
               ))}
             </ul>
           )}
-          <p className="muted small" style={{ marginTop: 10 }}>Si rechazás a alguien, puede volver a pedir ingreso en 7 días.</p>
+          <p className="muted small hint">Si rechazás a alguien, puede volver a pedir ingreso en 7 días.</p>
         </section>
       )}
 

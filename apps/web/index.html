@@ -1,10 +1,11 @@
 <!doctype html>
+<!-- Los %MARCADORES% los completa vite.config.ts con la marca (packages/brand). -->
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0c0b0d" />
-    <meta name="description" content="%APP_NAME%: app comunitaria, gratuita y de código abierto para conocer gente y charlar en grupos." />
+    <meta name="theme-color" content="%THEME_COLOR%" />
+    <meta name="description" content="%APP_NAME%: %APP_DESCRIPTION%" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/favicon-64.png" sizes="64x64" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -15,8 +16,9 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="%FONTS_HREF%" rel="stylesheet" />
     <title>%APP_NAME%</title>
+    <script>%THEME_SCRIPT%</script>
   </head>
   <body>
     <div id="root"></div>

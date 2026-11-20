@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { api, authClient, closeSocket, upload, type AlbumGrant, type Author, type Profile } from "../api";
 import { useMe } from "../App";
-import { APP_NAME } from "../brand";
+import { APP_NAME, THEME_LABELS, themes, type ThemeName } from "../brand";
 import { AlbumViewer, duration, untilLabel } from "../components/AlbumViewer";
 import { Avatar } from "../components/Avatar";
 import { EyeIcon, LockIcon, PlusIcon, StarIcon } from "../components/Icons";
+import { getTheme, setTheme } from "../theme";
 import { disablePush, enablePush, pushHelp, pushState, testPush, type PushState } from "../push";
 import { BODY_TYPES, HIV_STATUS, LOOKING_FOR, POSITIONS, PRONOUNS, RELATIONSHIP, TRIBES } from "../options";
 
@@ -82,7 +83,7 @@ function NotificationsSetting() {
     <section className="section">
       <div className="setting">
         <div>
-          <h2 className="section__title" style={{ marginBottom: 4 }}>Notificaciones</h2>
+          <h2 className="section__title section__title--tight">Notificaciones</h2>
           <p className="muted small">{pushHelp(state, APP_NAME)}</p>
         </div>
         {(state === "on" || state === "off") && (
@@ -92,11 +93,27 @@ function NotificationsSetting() {
         )}
       </div>
       {state === "on" && (
-        <p className="small" style={{ marginTop: 8 }}>
+        <p className="small hint">
           <button className="linkbtn" onClick={sendTest} disabled={busy}>Mandarme una de prueba</button>
           {test && <span className="muted" role="status"> · {test}</span>}
         </p>
       )}
+    </section>
+  );
+}
+
+function ThemeSetting() {
+  const [theme, setCurrent] = useState(getTheme);
+  const choose = (t: ThemeName) => { setTheme(t); setCurrent(t); };
+  return (
+    <section className="section">
+      <h2 className="section__title section__title--tight">Tema</h2>
+      <p className="muted small lead">Penumbra es un oscuro más suave, para usar de día o con mucho brillo.</p>
+      <div className="segmented" role="radiogroup" aria-label="Tema">
+        {(Object.keys(themes) as ThemeName[]).map((t) => (
+          <button key={t} role="radio" aria-checked={theme === t} onClick={() => choose(t)}>{THEME_LABELS[t]}</button>
+        ))}
+      </div>
     </section>
   );
 }
@@ -253,6 +270,7 @@ export function MyProfile() {
       </nav>
 
       <NotificationsSetting />
+      <ThemeSetting />
 
       <section className="section">
         <h2 className="section__title">Fotos <span className="muted">{publicPhotos.length}/6</span></h2>
@@ -278,7 +296,7 @@ export function MyProfile() {
 
       <section className="section">
         <h2 className="section__title"><LockIcon /> Álbum privado <span className="muted">{privatePhotos.length}/40</span></h2>
-        <p className="muted small" style={{ marginBottom: 10 }}>
+        <p className="muted small lead">
           Fotos y videos (hasta 1 minuto) que solo ve la gente a la que se lo compartís desde su perfil, por 1 hora, 24 horas, 7 días o sin límite. Podés quitar el acceso cuando quieras.
         </p>
         <div className="photos">
@@ -305,7 +323,7 @@ export function MyProfile() {
         )}
         {grants.length > 0 && (
           <>
-            <h3 className="subhead" style={{ margin: "14px 0 8px" }}>Lo pueden ver</h3>
+            <h3 className="subhead subhead--spaced">Lo pueden ver</h3>
             <ul className="blocked grants">
               {grants.map((g) => (
                 <li key={g.id}>

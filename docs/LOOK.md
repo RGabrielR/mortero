@@ -1,6 +1,6 @@
 # Look and feel
 
-Así se ve y se siente qule.ar hoy. Es un punto de partida, no algo cerrado: las propuestas se charlan en el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3).
+Así se ve, se llama y se siente qule.ar. Esta es la guía oficial: todo lo nuevo la tiene que seguir, y `npm run lint` controla lo que se puede controlar solo. Las propuestas para cambiarla se charlan en el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3).
 
 ## La idea
 
@@ -9,33 +9,104 @@ Así se ve y se siente qule.ar hoy. Es un punto de partida, no algo cerrado: las
 - **Pocas cosas, bien hechas.** Cuatro pestañas (Cerca, Grupos, Mensajes, Yo). Si algo nuevo no entra ahí, probablemente vaya dentro de una.
 - **Pensada para el celular.** Se diseña primero para una pantalla de 375 px de ancho y una mano.
 
+## Dónde vive la marca
+
+Todo sale de un solo archivo: [`packages/brand/src/index.ts`](../packages/brand/src/index.ts).
+
+| Qué | De dónde sale |
+|---|---|
+| Nombre de la app (`APP_NAME`) y descripción | `packages/brand`. La web y el API lo importan de ahí (`./brand`). |
+| Variables CSS: colores, temas, tamaños de letra, radios, sombras, capas | `packages/brand` las genera; `vite.config.ts` las carga con `import "virtual:brand.css"`. |
+| Color de la barra del navegador, fuentes de Google y nombre en `index.html` | `vite.config.ts` completa los `%MARCADORES%` de `index.html`. |
+| `manifest.webmanifest` (la app instalada) | Lo arma `vite.config.ts` con `webManifest()`. Ya no está en `public/`. |
+| Colores de los mails | `mail` en `packages/brand`. |
+| Íconos de la app (Android, iPhone, favicon, notificaciones) | `apps/web/brand/icono.png` → `npm run icons --workspace web`. |
+| Íconos de la interfaz | [`apps/web/src/components/Icons.tsx`](../apps/web/src/components/Icons.tsx). |
+| Título por defecto de las notificaciones | Escrito a mano en `apps/web/public/sw.js`; `npm run lint` avisa si no coincide con `APP_NAME`. |
+
+Para renombrar la app alcanza con cambiar `APP_NAME`. Para cambiar un color, se cambia en `packages/brand` y se actualiza en todos lados.
+
+## Reglas
+
+Las controla `npm run lint` (stylelint + `scripts/check-brand.mjs`) y corre en cada PR:
+
+1. **En el CSS no hay valores sueltos** de color, radio, sombra, capa (`z-index`), familia o tamaño de letra. Se usa la variable: `var(--danger)`, `var(--radius-xl)`, `var(--text-sm)`.
+2. **Si falta una variable, se agrega en `packages/brand`**, con un nombre por uso (`--queue-soft`), no por valor (`--amarillo-claro`). Y se suma a esta guía.
+3. **Las variables de la marca no se definen en el CSS.** En `styles.css` solo hay variables de layout (`--tabbar-h`, `--safe-b`).
+4. **Sin colores en TS/TSX.** La única excepción es la "G" de Google (`components/GoogleMark.tsx`).
+5. **Sin `style={{ … }}` para cosas fijas.** Un margen va en una clase de `styles.css`. `style` queda para valores que se calculan en el momento (el tamaño de un avatar, una barra de progreso).
+6. **Pesos de letra que se cargan:** Inter 400, 500, 600 y 700; Bricolage Grotesque 600 y 800. Si hace falta otro, se agrega en `fonts` (`packages/brand`) para que se cargue de verdad.
+
 ## Colores
 
-Están definidos como variables al principio de `apps/web/src/styles.css`. Usá siempre las variables, nunca colores sueltos.
+### Los que cambian con el tema
 
-| Variable | Color | Para qué |
+| Variable | Oscuro | Penumbra | Para qué |
+|---|---|---|---|
+| `--bg` | `#0c0b0d` | `#2a2631` | Fondo. También la barra del navegador. |
+| `--surface` | `#151318` | `#332e3b` | Tarjetas, barras, hojas |
+| `--surface-2` | `#1e1b22` | `#3d3746` | Inputs, burbujas, botones secundarios |
+| `--surface-3` | `#29252e` | `#484151` | Hover y lo que va encima de surface-2 |
+| `--line` | `#2e2a33` | `#544c5e` | Bordes y separadores |
+| `--text` | `#f2eef5` | `#f7f4fa` | Texto |
+| `--muted` | `#9b94a4` | `#bfb7c9` | Texto secundario |
+
+### Los que no cambian
+
+| Variable | Valor | Para qué |
 |---|---|---|
-| `--bg` | `#0c0b0d` | Fondo |
-| `--surface` / `-2` / `-3` | `#151318` / `#1e1b22` / `#29252e` | Tarjetas, inputs, hover |
-| `--line` | `#2e2a33` | Bordes |
-| `--text` | `#f2eef5` | Texto |
-| `--muted` | `#9b94a4` | Texto secundario |
-| `--accent` | `#ff6a3d` | Brasa: botones principales, el logo, lo que está activo |
-| `--queue` | `#f5b84a` | Mensajes en cola del antispam |
+| `--accent` | `#ff6a3d` | Brasa: botones principales, el logo en texto, lo activo. **Se usa poco**: si todo es naranja, nada se destaca. |
+| `--accent-2` | `#ff8a63` | Hover del botón principal, links, texto sobre brasa suave |
+| `--accent-ink` | `#1a0d08` | Texto sobre brasa |
+| `--queue` | `#f5b84a` | Mensajes en cola del antispam, avisos, favoritos |
 | `--danger` | `#ff4d6d` | Borrar, bloquear, errores |
 | `--ok` | `#4fd18b` | En línea |
 
-El acento se usa poco: si todo es naranja, nada se destaca.
+Cada color de estado tiene sus transparencias con el mismo nombre: `-soft` (fondo suave), `-line` (borde) y `-strong` (borde marcado). Por ejemplo `--danger-soft`, `--queue-line`, `--accent-line`.
+
+**Sobre fotos y videos** se usan `--media-bg`, `--on-media*` y `--scrim*`. Son siempre oscuros, sin importar el tema, para que el texto encima de una foto se lea.
+
+## Temas
+
+No hay modo claro "blanco": rompería lo discreto de la app. Hay dos oscuros:
+
+- **Oscuro** (por defecto): casi negro con el toque violeta, para la noche y el colectivo.
+- **Penumbra**: un oscuro más suave para usar de día o con mucho brillo.
+
+Se elige en **Yo → Tema** y se guarda en el dispositivo. Solo cambian los colores de la tabla de arriba: el acento y los colores de estado son los mismos. Para sumar un tema se agrega en `themes` (`packages/brand`) con los mismos siete colores.
 
 ## Tipografía
 
-- **Bricolage Grotesque** (800) para el logo y los títulos grandes.
-- **Inter** para todo lo demás. Texto base de 15 px.
+- **Bricolage Grotesque** (`var(--display)`, 800) para el logo en texto y los títulos grandes.
+- **Inter** (`var(--font)`) para todo lo demás. Texto base de 15 px.
+
+Tamaños (`font-size: var(--…)`):
+
+| Texto | | Títulos | | Especiales | |
+|---|---|---|---|---|---|
+| `--text-2xs` | 11 px | `--title-xs` | 20 px | `--display-md` | 40 px (inicial sin foto, grilla) |
+| `--text-xs` | 12 px | `--title-sm` | 22 px | `--display-xl` | 120 px (inicial sin foto, perfil) |
+| `--text-sm` | 13 px | `--title-md` | 24 px | `--wordmark-hero` | 48–72 px (bienvenida) |
+| `--text-md` | 14 px | `--title-lg` | 26 px | | |
+| `--text-base` | 15 px | `--title-xl` | 28 px | | |
+| `--text-lg` | 16 px | `--title-2xl` | 32 px | | |
+| `--text-xl` | 18 px | `--title-3xl` | 34 px | | |
 
 ## Formas
 
-- Bordes redondeados de 14 px en tarjetas; botones en forma de píldora.
+- **Radios** (`border-radius: var(--radius-…)`): `hair` 3 · `xs` 6 · `sm` 8 · `md` 10 · `lg` 12 · `xl` 14 · `2xl` 18 · `3xl` 20 · `4xl` 22 · `pill` 999. Tarjetas en `xl`; botones, chips y contadores en `pill`; hojas modales en `4xl`.
+- **Sombras**: `--shadow-pop` (menús, toasts, carteles flotantes), `--shadow-icon` (íconos sobre fotos, con `filter: drop-shadow()`), `--shadow-ring-ok` (el puntito de en línea).
+- **Capas** (`z-index: var(--z-…)`), de abajo hacia arriba: `raised` · `sticky` · `menu` · `sheet` · `toast` · `viewer` · `lightbox`.
 - La grilla de gente es de fotos cuadradas, sin espacio entre ellas, con el nombre y el estado encima.
+
+## Íconos
+
+- **De la interfaz** (`Icons.tsx`): de línea, en una base de 24 × 24, trazo de 2 px redondeado y `currentColor` (toman el color del texto). Un ícono nuevo va ahí, con el mismo estilo.
+- **De la app**: el mate culo. El original está en `apps/web/brand/icono.png`; después de cambiarlo se corre `npm run icons --workspace web`, que genera todos los tamaños y la silueta blanca de las notificaciones de Android.
+
+## Logo
+
+El mate culo: un mate con su bombilla en el que el cuenco es una cola. Hay contexto y referencias en [`docs/logos`](logos/README.md) y en el hilo de Look and feel.
 
 ## Tono de los textos
 
@@ -44,11 +115,21 @@ El acento se usa poco: si todo es naranja, nada se destaca.
 - Nunca culpar a quien usa la app: "No se pudo enviar, probá de nuevo", no "Error 500".
 - Lenguaje inclusivo cuando hace falta ("todes"), sin forzarlo en cada frase.
 
-## Temas abiertos
+## Para lo nuevo
 
-Cosas que están para definir entre todes:
+Antes de abrir un PR que toque la pantalla:
 
-- El logo (hoy es solo la palabra en naranja) y el ícono de la app.
-- ¿Un modo claro, o oscuro siempre?
-- Íconos propios en lugar de los genéricos.
-- El nombre definitivo, que cambia todo lo demás.
+- [ ] Usa clases y variables que ya existen. Si inventa una, la agrega en `packages/brand` y en esta guía.
+- [ ] Se ve bien en los dos temas (Yo → Tema).
+- [ ] Se ve bien en 375 px de ancho.
+- [ ] Los textos siguen el tono de arriba.
+- [ ] `npm run lint` pasa.
+
+## Pendiente
+
+Cosas para seguir mejorando la marca desde esta base:
+
+- **Llevar el color del mate a la app.** El ícono usa un degradé de amarillo a magenta (`#feb107` → `#fe6514` → `#fb134a`) y la app un solo naranja brasa (`#ff6a3d`). Falta decidir cómo conviven.
+- **Escala de espacios.** Márgenes y paddings todavía están en px sueltos; el próximo paso es una escala (`--space-*`) controlada igual que el resto.
+- **Íconos propios** en el estilo del mate, empezando por las cuatro pestañas.
+- **Fondo de los íconos de la app**: `icons.mjs` usa negro puro y la app `#0c0b0d`.

@@ -1,0 +1,33 @@
+# Revisa cada PR: que respete la marca, que tipe y que la web compile.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Marca (colores, tipografía, radios, capas)
+        run: npm run lint
+      - name: Tipos (API y web)
+        run: npm run typecheck
+      - name: Build de la web
+        run: npm run build
+
+  # Que la imagen de producción se siga armando (el API importa la marca desde packages/)
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t qule-ci .
+      - name: El API encuentra la marca dentro de la imagen
+        run: docker run --rm --entrypoint node qule-ci --import tsx -e "import('@mortero/brand').then((b) => console.log('Marca OK:', b.APP_NAME))"

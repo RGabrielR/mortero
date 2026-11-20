@@ -20,10 +20,10 @@ function PeopleGrid({ title, people, empty, note }: { title: string; people: (Au
         <button className="iconbtn" onClick={() => nav("/yo")} aria-label="Volver"><BackIcon /></button>
         <h1 className="topbar__title topbar__title--sm">{title}</h1>
       </header>
-      {note && <p className="muted small" style={{ padding: "12px 16px 0" }}>{note}</p>}
+      {note && <p className="muted small page-note">{note}</p>}
       {people && people.length === 0 && <div className="empty"><p className="muted">{empty}</p></div>}
       {people && people.length > 0 && (
-        <ul className="grid" style={{ marginTop: 8 }}>
+        <ul className="grid grid--spaced">
           {people.map((p) => (
             <li key={p.id}>
               <Link to={`/perfil/${p.id}`} className="tile" aria-label={`${p.name}, ${p.age}`}>

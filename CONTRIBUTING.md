@@ -25,6 +25,7 @@ La regla: **las ideas arrancan en Discusiones**. Cuando una idea se acuerda, se 
 
 - `apps/api`: Node + Hono + Socket.IO + Better Auth + Drizzle. Las rutas están en `src/routes/`, el antispam en `src/antispam.ts`.
 - `apps/web`: React + Vite, es una PWA. Las pantallas están en `src/pages/`, todos los estilos en `src/styles.css`.
+- `packages/brand`: la marca en un solo lugar (nombre, colores, temas, tipografía, radios). La usan la web y el API. Ver [docs/LOOK.md](docs/LOOK.md).
 - `docs/PLAN.md`: el plan y las decisiones de diseño. `docs/DEPLOY.md`: cómo se sube a un servidor.
 
 Si cambiás la base de datos, editá `apps/api/src/db/schema.ts` y corré `npm run db:generate`. Incluí la migración generada en el PR.
@@ -43,6 +44,7 @@ Son la razón de ser de la app. Si un cambio va en contra de alguna, mejor charl
 
 - Uno por tema, chico si se puede.
 - Contá qué cambia y cómo lo probaste. Si toca la pantalla, sumá una captura.
+- Si toca la pantalla, seguí [docs/LOOK.md](docs/LOOK.md): nada de colores, tamaños ni radios sueltos, todo con las variables de la marca. Antes de mandarlo corré `npm run check` (marca + tipos + build); en el PR lo corre solo.
 - Todos los textos de la app van en español rioplatense, con voseo ("Tenés un mensaje nuevo").
 - Si encontrás un problema de seguridad o privacidad, **no abras un issue público**: escribile a la persona que mantiene el repo por mensaje privado en GitHub.
 
