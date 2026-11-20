@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { api, type Author, type Viewer } from "../api";
+import { api, type Author, type Toque, type Viewer } from "../api";
+import { ReactionIcon } from "../components/Reactions";
+import { reactionLabel } from "../reactions";
 import { useMe } from "../App";
 import { BackIcon } from "../components/Icons";
 
@@ -12,7 +14,7 @@ function ago(iso: string) {
   return d === 1 ? "ayer" : `hace ${d} días`;
 }
 
-function PeopleGrid({ title, people, empty, note }: { title: string; people: (Author & { sub?: string })[] | null; empty: string; note?: string }) {
+function PeopleGrid({ title, people, empty, note }: { title: string; people: (Author & { sub?: string; reaction?: string; isNew?: boolean })[] | null; empty: string; note?: string }) {
   const nav = useNavigate();
   return (
     <div className="page">
@@ -28,6 +30,11 @@ function PeopleGrid({ title, people, empty, note }: { title: string; people: (Au
             <li key={p.id}>
               <Link to={`/perfil/${p.id}`} className="tile" aria-label={`${p.name}, ${p.age}`}>
                 {p.photo ? <img src={p.photo} alt="" loading="lazy" /> : <span className="tile__empty">{p.name.charAt(0).toUpperCase()}</span>}
+                {p.reaction && (
+                  <span className={`tile__reaction ${p.isNew ? "tile__reaction--new" : ""}`} title={reactionLabel(p.reaction)}>
+                    <ReactionIcon kind={p.reaction} size={26} />
+                  </span>
+                )}
                 <span className="tile__info">
                   <span className="tile__name">{p.name} <span className="tile__dist">{p.age}</span></span>
                   {p.sub && <span className="tile__dist">{p.sub}</span>}
@@ -63,4 +70,25 @@ export function Favorites() {
     api<Author[]>("/favorites").then(setList).catch(() => setList([]));
   }, []);
   return <PeopleGrid title="Favoritos" people={list} empty="Todavía no marcaste a nadie. Tocá la estrella en un perfil." note="Nadie se entera de que lo marcaste como favorito." />;
+}
+
+/** Los toques que te mandaron en los últimos 30 días (el último de cada persona). Al entrar se marcan como vistos. */
+export function Toques() {
+  const [list, setList] = useState<Toque[] | null>(null);
+  useEffect(() => {
+    api<Toque[]>("/toques").then((t) => {
+      setList(t);
+      if (t.some((x) => x.unseen)) {
+        api("/toques/seen", { method: "POST" }).then(() => window.dispatchEvent(new Event("mortero:toques"))).catch(() => {});
+      }
+    }).catch(() => setList([]));
+  }, []);
+  return (
+    <PeopleGrid
+      title="Toques"
+      people={list?.map((t) => ({ ...t, sub: `${reactionLabel(t.kind)} · ${ago(t.at)}`, reaction: t.kind, isNew: t.unseen })) ?? null}
+      empty="Todavía nadie te mandó un toque. Cuando alguien lo haga, aparece acá."
+      note="Toques de los últimos 30 días. Devolvé uno desde su perfil o escribile."
+    />
+  );
 }

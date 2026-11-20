@@ -5,6 +5,8 @@ import { BackIcon, LockIcon, StarIcon } from "../components/Icons";
 import { useMe } from "../App";
 import { ReportDialog } from "../components/ReportDialog";
 import { AlbumGrid, AlbumViewer, untilLabel } from "../components/AlbumViewer";
+import { ReactionIcon, ReactionPicker } from "../components/Reactions";
+import { reactionLabel } from "../reactions";
 
 const SHARE_OPTIONS: { hours: number | null; label: string }[] = [
   { hours: 1, label: "1 hora" },
@@ -67,6 +69,8 @@ export function ProfilePage() {
   // ?album=1 (desde el mensaje del chat) abre el álbum directo
   const [viewing, setViewing] = useState<number | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [toquePicker, setToquePicker] = useState(false);
+  const [toqueMsg, setToqueMsg] = useState("");
 
   useEffect(() => {
     setP(null);
@@ -107,6 +111,19 @@ export function ProfilePage() {
     if (!p) return;
     await api(`/album/grants/${id}`, { method: "DELETE" });
     setP({ ...p, iSharedAlbum: false, sharedUntil: null });
+  }
+
+  /** Mandar un toque: a la otra persona le llega un aviso. Uno cada 12 horas por persona. */
+  async function sendToque(kind: string) {
+    if (!p) return;
+    setToquePicker(false);
+    try {
+      const t = await api<{ kind: string; at: string }>(`/users/${id}/toques`, { method: "POST", json: { kind } });
+      setP({ ...p, myToque: t });
+      setToqueMsg(`Le mandaste un toque: ${reactionLabel(kind)}`);
+    } catch (err) {
+      setToqueMsg((err as Error).message);
+    }
   }
 
   async function doBlock() {
@@ -166,15 +183,32 @@ export function ProfilePage() {
           <div className="row">
             <button className="btn btn--primary btn--grow" onClick={message}>Mandar mensaje</button>
             <button
+              className={`btn btn--icon btn--toque ${p.myToque ? "btn--toque-sent" : ""}`}
+              onClick={() => (p.myToque ? setToqueMsg(`Ya le mandaste un toque (${reactionLabel(p.myToque.kind)}). Vas a poder mandarle otro en unas horas.`) : setToquePicker(!toquePicker))}
+              aria-expanded={toquePicker}
+              aria-label={p.myToque ? `Ya le mandaste un toque: ${reactionLabel(p.myToque.kind)}` : "Mandar un toque"}
+              title="Mandar un toque"
+            >
+              {p.myToque ? <ReactionIcon kind={p.myToque.kind} size={24} /> : <img src="/reacciones/toque.svg" alt="" width={24} height={24} />}
+            </button>
+            <button
               className={`btn btn--icon ${p.favorite ? "btn--fav" : ""}`}
               onClick={toggleFavorite}
               aria-pressed={p.favorite}
               aria-label={p.favorite ? "Sacar de favoritos" : "Agregar a favoritos"}
+              title="Favoritos (privado: no se entera)"
             >
               <StarIcon filled={p.favorite} />
             </button>
           </div>
         )}
+        {toquePicker && (
+          <div className="toque-picker">
+            <p className="muted small">Mandale un toque: le llega un aviso y lo ve en sus Toques.</p>
+            <ReactionPicker onPick={sendToque} label="Elegí un toque" />
+          </div>
+        )}
+        {toqueMsg && <p className="muted small toque-msg" role="status">{toqueMsg}</p>}
 
         {p.privateAlbum && (
           <section className="album">

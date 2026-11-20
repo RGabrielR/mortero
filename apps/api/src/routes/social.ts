@@ -4,12 +4,13 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { db, schema } from "../db/index.js";
 import {
-  ageFrom, authorsFor, imageUrl, isBlocked, mediaOut, newId, requireProfile, requireUser, type AppEnv,
+  ageFrom, authorsFor, imageUrl, isBlocked, mediaOut, newId, reactionsFor, type ReactionSummary, requireProfile, requireUser, type AppEnv,
 } from "../lib.js";
 import { emitToUser, isOnline } from "../realtime.js";
 import { distanceKm, distanceLabel } from "../geo.js";
 import { deleteImage, MAX_UPLOAD_BYTES, saveImage } from "../storage.js";
 import { albumAccessUntil, recordView } from "./premium.js";
+import { myRecentToque } from "./toques.js";
 import { pushTo } from "../push.js";
 import { APP_NAME } from "../brand.js";
 
@@ -75,6 +76,8 @@ socialRoutes.get("/users/:id", async (c) => {
         }
       : null,
     iSharedAlbum: myGrant !== undefined,
+    // El último toque que le mandé, si fue hace menos de 12 horas
+    myToque: id === me.id ? null : await myRecentToque(me.id, id),
     sharedUntil: myGrant ? myGrant.toISOString() : null,
     distance: canShowDistance ? distanceLabel(distanceKm(mine.cellLat!, mine.cellLng!, p.cellLat!, p.cellLng!)) : null,
   });
@@ -92,7 +95,7 @@ async function myConversation(convId: string, userId: string) {
   return { conv, otherId: conv.userA === userId ? conv.userB : conv.userA };
 }
 
-function serializeDm(m: typeof directMessage.$inferSelect) {
+function serializeDm(m: typeof directMessage.$inferSelect, reactions: ReactionSummary[] = []) {
   return {
     id: m.id,
     conversationId: m.conversationId,
@@ -105,6 +108,7 @@ function serializeDm(m: typeof directMessage.$inferSelect) {
     opened: Boolean(m.openedAt),
     readAt: m.readAt?.toISOString() ?? null,
     createdAt: m.createdAt.toISOString(),
+    reactions,
   };
 }
 
@@ -189,7 +193,8 @@ socialRoutes.get("/conversations/:id/messages", async (c) => {
     .where(and(...conds))
     .orderBy(desc(directMessage.createdAt))
     .limit(50);
-  return c.json({ messages: rows.reverse().map(serializeDm), hasMore: rows.length === 50 });
+  const reactions = await reactionsFor(rows.map((m) => m.id));
+  return c.json({ messages: rows.reverse().map((m) => serializeDm(m, reactions.get(m.id))), hasMore: rows.length === 50 });
 });
 
 socialRoutes.post("/conversations/:id/messages", async (c) => {
@@ -272,6 +277,7 @@ socialRoutes.delete("/conversations/:id/messages/:mid", async (c) => {
     .returning();
   if (!row) return c.notFound();
   if (row.photoKey) await deleteImage(row.photoKey);
+  await db.delete(schema.reaction).where(eq(schema.reaction.messageId, row.id));
   const payload = { conversationId: conv.id, id: row.id };
   emitToUser(me.id, "dm:deleted", payload);
   emitToUser(otherId, "dm:deleted", payload);

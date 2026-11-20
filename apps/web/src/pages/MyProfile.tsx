@@ -134,6 +134,7 @@ export function MyProfile() {
   const [grants, setGrants] = useState<AlbumGrant[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number; video: boolean } | null>(null);
   const [viewing, setViewing] = useState<number | null>(null);
+  const [toquesNew, setToquesNew] = useState(0);
 
   useEffect(() => {
     if (me?.profile) {
@@ -148,6 +149,7 @@ export function MyProfile() {
 
   useEffect(() => {
     api<Author[]>("/blocks").then(setBlocked).catch(() => {});
+    api<{ count: number }>("/toques/unseen").then((r) => setToquesNew(r.count)).catch(() => {});
     api<AlbumGrant[]>("/album/grants").then(setGrants).catch(() => {});
   }, []);
 
@@ -266,6 +268,10 @@ export function MyProfile() {
       <nav className="quicklinks" aria-label="Accesos">
         <Link to="/visitas" className="quicklink"><EyeIcon /> Quién me vio</Link>
         <Link to="/favoritos" className="quicklink"><StarIcon size={18} /> Favoritos</Link>
+        <Link to="/toques" className="quicklink quicklink--full">
+          <img src="/reacciones/rayo.svg" alt="" width={18} height={18} /> Toques
+          {toquesNew > 0 && <b className="badge badge--inline">{toquesNew}</b>}
+        </Link>
         {me.user.isAdmin && <Link to="/admin" className="quicklink quicklink--wide">Moderación</Link>}
       </nav>
 

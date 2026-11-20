@@ -43,6 +43,12 @@ export function closeSocket() {
 
 export type Author = { id: string; name: string; age: number; photo: string | null };
 
+/** Un toque recibido. */
+export type Toque = Author & { kind: string; at: string; unseen: boolean };
+
+/** Evento en vivo cuando cambian las reacciones de un mensaje. */
+export type ReactionEvent = { scope: "dm" | "group"; messageId: string; conversationId?: string; groupId?: string; reactions: { kind: string; by: string[] }[] };
+
 /** Una foto o video del perfil o del álbum. `thumb` es la miniatura (en los videos, un fotograma). */
 export type Media = { url: string; kind: "photo" | "video"; thumb: string | null; seconds: number | null };
 
@@ -90,6 +96,8 @@ export type PublicProfile = Omit<Profile, "birthdate"> & {
   privateAlbum: { count: number; videos: number; items: Media[] | null; expiresAt: string | null } | null;
   iSharedAlbum: boolean;
   sharedUntil: string | null;
+  // El último toque que le mandé, si fue hace menos de 12 horas
+  myToque: { kind: string; at: string } | null;
 };
 
 export type NearbyPerson = {
@@ -112,6 +120,7 @@ export type GroupMessage = {
   // En los grupos solo se muestra nombre y foto, sin la edad
   author: Pick<Author, "id" | "name" | "photo">;
   replyTo: { id: string; authorName: string; body: string | null } | null;
+  reactions: { kind: string; by: string[] }[];
 };
 
 export type Dm = {
@@ -125,6 +134,7 @@ export type Dm = {
   opened: boolean;
   readAt: string | null;
   createdAt: string;
+  reactions: { kind: string; by: string[] }[];
 };
 
 export type Role = "owner" | "moderator" | "member";

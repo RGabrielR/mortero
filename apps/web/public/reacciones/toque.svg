@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#ffb000"/><stop offset=".55" stop-color="#ff6a1a"/><stop offset="1" stop-color="#ff1a55"/></linearGradient>
+  <radialGradient id="hi" cx=".32" cy=".22" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
+  <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs><style>.mo *{fill:none;stroke:url(#g);stroke-width:26px;stroke-linejoin:round} .mc *{fill:#0c0b0d;stroke:none}.a{fill:none;stroke:#f7ead9;stroke-width:8px} .as{fill:none;stroke:#f7ead9;stroke-linecap:round}
+      .c{fill:none;stroke:url(#g);stroke-linecap:round} .cf{fill:url(#g)} .back .a{fill:#0c0b0d}</style><g class="back"></g><g class="mo"><path d="M156 12 L54 146 L118 146 L92 244 L204 98 L138 98 Z" stroke-width="14"/></g><g class="mc"><path d="M156 12 L54 146 L118 146 L92 244 L204 98 L138 98 Z" stroke-width="14"/></g><g class="rest"><path class="as" d="M140 52 L104 104" stroke-width="10"/></g></svg>

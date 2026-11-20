@@ -248,3 +248,27 @@ export const directMessage = pgTable("direct_message", {
   readAt: timestamp("read_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("dm_conv_idx").on(t.conversationId, t.createdAt)]);
+
+// ---------- Toques y reacciones ----------
+
+/** Las reacciones que existen (los íconos están en apps/web/public/reacciones). */
+export const REACTIONS = ["hola", "fuego", "rayo", "lengua", "chispa", "ojitos", "ganas", "gotas"] as const;
+
+/** Un toque: avisarle a alguien que te gusta, con una reacción. A diferencia de la estrella, la otra persona se entera. */
+export const toque = pgTable("toque", {
+  id: text("id").primaryKey(),
+  fromId: text("from_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  toId: text("to_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  seenAt: timestamp("seen_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("toque_to_idx").on(t.toId, t.createdAt), index("toque_pair_idx").on(t.fromId, t.toId, t.createdAt)]);
+
+/** Reacción a un mensaje (privado o de grupo). Una por persona por mensaje. */
+export const reaction = pgTable("reaction", {
+  messageId: text("message_id").notNull(),
+  scope: text("scope").notNull(), // "dm" | "group"
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [primaryKey({ columns: [t.messageId, t.userId] }), index("reaction_msg_idx").on(t.messageId)]);

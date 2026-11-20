@@ -17,7 +17,7 @@ import { ProfilePage } from "./pages/Profile";
 import { MyProfile } from "./pages/MyProfile";
 import { ChatIcon, GridIcon, GroupIcon, UserIcon } from "./components/Icons";
 import { Nearby } from "./pages/Nearby";
-import { Favorites, Views } from "./pages/People";
+import { Favorites, Toques, Views } from "./pages/People";
 
 type MeState = { me: Me | null; loading: boolean; reload: () => Promise<void> };
 const MeContext = createContext<MeState>({ me: null, loading: true, reload: async () => {} });
@@ -65,6 +65,7 @@ export function App() {
           <Route path="/yo" element={<MyProfile />} />
           <Route path="/visitas" element={<Views />} />
           <Route path="/favoritos" element={<Favorites />} />
+          <Route path="/toques" element={<Toques />} />
           <Route path="/admin" element={<Admin />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#ffb000"/><stop offset=".55" stop-color="#ff6a1a"/><stop offset="1" stop-color="#ff1a55"/></linearGradient>
+  <radialGradient id="hi" cx=".32" cy=".22" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
+  <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs><style>.main *{fill:url(#g);stroke:url(#g);stroke-linejoin:round}
+  .a{fill:#f7ead9;stroke:none} .as{fill:none;stroke:#f7ead9;stroke-linecap:round;stroke-linejoin:round}
+  .c{fill:none;stroke:#000;stroke-linecap:round} .cf{fill:#000}</style><g class="back"><path class="as" d="M146 118 L182 54 L206 46" stroke-width="16"/></g><g class="main"><circle cx="100" cy="172" r="58"/><circle cx="156" cy="172" r="58"/></g><g class="rest"><path class="c" d="M154 138 Q120 172 136 228" stroke-width="9"/>
+      <rect class="a" x="66" y="104" width="124" height="30" rx="15"/>
+      <ellipse class="cf" cx="128" cy="118" rx="46" ry="6"/>
+      <path class="as" d="M26 116 q-14 24 0 48" stroke-width="10"/><path class="as" d="M232 132 q14 24 0 48" stroke-width="10"/></g></svg>

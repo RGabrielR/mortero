@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#ffb000"/><stop offset=".55" stop-color="#ff6a1a"/><stop offset="1" stop-color="#ff1a55"/></linearGradient>
+  <radialGradient id="hi" cx=".32" cy=".22" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
+  <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs><style>.main *{fill:url(#g);stroke:url(#g);stroke-linejoin:round}
+  .a{fill:#f7ead9;stroke:none} .as{fill:none;stroke:#f7ead9;stroke-linecap:round;stroke-linejoin:round}
+  .c{fill:none;stroke:#000;stroke-linecap:round} .cf{fill:#000}</style><g class="back"></g><g class="main"><polygon points="128.0,16.0 147.8,77.5 202.6,43.1 178.2,103.0 242.2,111.9 185.1,142.1 228.5,190.0 165.3,176.4 167.7,241.0 128.0,190.0 88.3,241.0 90.7,176.4 27.5,190.0 70.9,142.1 13.8,111.9 77.8,103.0 53.4,43.1 108.2,77.5" stroke-width="10"/></g><g class="rest"><polygon class="a" points="138.3,81.0 142.1,109.0 168.7,99.6 153.6,123.4 180.0,133.3 153.1,141.9 167.0,166.4 140.9,155.7 135.7,183.4 122.6,158.5 100.9,176.4 106.9,148.8 78.7,148.5 101.0,131.3 79.6,113.0 107.8,114.1 103.2,86.3 124.0,105.3"/></g></svg>

@@ -97,3 +97,22 @@ export async function isBlocked(a: string, b: string): Promise<boolean> {
 }
 
 export const newId = () => crypto.randomUUID();
+
+export type ReactionSummary = { kind: string; by: string[] };
+
+/** Reacciones de varios mensajes, agrupadas por tipo: [{ kind: "fuego", by: [userId, ...] }]. */
+export async function reactionsFor(messageIds: string[]): Promise<Map<string, ReactionSummary[]>> {
+  const out = new Map<string, ReactionSummary[]>();
+  if (!messageIds.length) return out;
+  const rows = await db.select().from(schema.reaction)
+    .where(inArray(schema.reaction.messageId, messageIds))
+    .orderBy(asc(schema.reaction.createdAt));
+  for (const r of rows) {
+    const list = out.get(r.messageId) ?? [];
+    const k = list.find((x) => x.kind === r.kind);
+    if (k) k.by.push(r.userId);
+    else list.push({ kind: r.kind, by: [r.userId] });
+    out.set(r.messageId, list);
+  }
+  return out;
+}

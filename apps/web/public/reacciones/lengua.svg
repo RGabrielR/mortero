@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#ffb000"/><stop offset=".55" stop-color="#ff6a1a"/><stop offset="1" stop-color="#ff1a55"/></linearGradient>
+  <radialGradient id="hi" cx=".32" cy=".22" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
+  <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs><style>.main *{fill:url(#g);stroke:url(#g);stroke-linejoin:round}
+  .a{fill:#f7ead9;stroke:none} .as{fill:none;stroke:#f7ead9;stroke-linecap:round;stroke-linejoin:round}
+  .c{fill:none;stroke:#000;stroke-linecap:round} .cf{fill:#000}</style><g class="back"></g><g class="main"><path d="M62 104 L194 104 L194 150 C194 200 164 236 128 236 C92 236 62 200 62 150 Z"/></g><g class="rest"><path class="c" d="M128 116 C124 146 124 168 128 196" stroke-width="9"/>
+      <path class="a k" d="M24 92 C70 52 108 66 128 78 C148 66 186 52 232 92 C186 128 70 128 24 92 Z"/>
+      <path class="c" d="M52 94 C96 106 160 106 204 94" stroke-width="8"/></g></svg>
