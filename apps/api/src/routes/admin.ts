@@ -1,5 +1,5 @@
 // Notificaciones push y panel de moderación.
-import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
@@ -7,7 +7,8 @@ import { z } from "zod";
 import { db, schema } from "../db/index.js";
 import { env } from "../env.js";
 import { authorsFor, newId, requireProfile, requireUser, type AppEnv } from "../lib.js";
-import { pushEnabled, vapidPublicKey } from "../push.js";
+import { pushEnabled, pushTo, vapidPublicKey } from "../push.js";
+import { APP_NAME } from "../brand.js";
 import { disconnectUser, emitToGroup } from "../realtime.js";
 import { deleteImage } from "../storage.js";
 
@@ -31,11 +32,25 @@ adminRoutes.post("/push/subscribe", requireUser, requireProfile, async (c) => {
   const r = subInput.safeParse(await c.req.json());
   if (!r.success) throw new HTTPException(400, { message: "Suscripción inválida" });
   const { endpoint, keys } = r.data;
+  const origin = new URL(env.APP_URL).origin;
   await db
     .insert(pushSubscription)
-    .values({ id: newId(), userId: u.id, endpoint, p256dh: keys.p256dh, auth: keys.auth })
-    .onConflictDoUpdate({ target: pushSubscription.endpoint, set: { userId: u.id, p256dh: keys.p256dh, auth: keys.auth } });
+    .values({ id: newId(), userId: u.id, endpoint, p256dh: keys.p256dh, auth: keys.auth, origin })
+    .onConflictDoUpdate({ target: pushSubscription.endpoint, set: { userId: u.id, p256dh: keys.p256dh, auth: keys.auth, origin } });
+  // Las suscripciones son por dominio: si esta persona las había activado en una dirección anterior
+  // (el link provisorio), esas se borran para que no le lleguen los avisos repetidos.
+  await db.delete(pushSubscription).where(and(
+    eq(pushSubscription.userId, u.id),
+    or(isNull(pushSubscription.origin), ne(pushSubscription.origin, origin)),
+  ));
   return c.json({ ok: true });
+});
+
+/** Manda una notificación de prueba a todos tus dispositivos. Devuelve a cuántos llegó. */
+adminRoutes.post("/push/test", requireUser, async (c) => {
+  const u = c.get("user");
+  const sent = await pushTo(u.id, { title: APP_NAME, body: "¡Listo! Así te van a llegar los avisos.", url: "/yo", tag: "prueba", always: true });
+  return c.json({ sent });
 });
 
 adminRoutes.delete("/push/subscribe", requireUser, async (c) => {

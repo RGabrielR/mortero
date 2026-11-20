@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { enablePush, pushState, type PushState } from "../push";
+import { APP_NAME } from "../brand";
+import { enablePush, pushHelp, pushState, testPush, type PushState } from "../push";
 
 const KEY = "mortero:avisos-oculto";
 const HIDE_DAYS = 3;
@@ -13,9 +14,13 @@ function hiddenRecently() {
   }
 }
 
+/** Casos en los que vale la pena mostrar el cartel: se pueden activar, o hay algo que la persona puede hacer. */
+const SHOW: PushState[] = ["off", "denied", "in-app", "ios-install"];
+
 /**
- * Invita a activar las notificaciones. Sin esto casi nadie las activa (estaban escondidas en Yo)
+ * Invita a activar las notificaciones, en el celu o en la compu. Sin esto casi nadie las activa
  * y nunca se entera de que le escribieron. Si la persona dice "Ahora no", vuelve a aparecer en 3 días.
+ * Al activarlas manda una de prueba, así se ve enseguida que funcionan.
  */
 export function NotifyBanner() {
   const [state, setState] = useState<PushState | null>(null);
@@ -27,7 +32,7 @@ export function NotifyBanner() {
     pushState().then(setState).catch(() => setState(null));
   }, [hidden]);
 
-  if (hidden || (state !== "off" && state !== "ios-install")) return null;
+  if (hidden || !state || !SHOW.includes(state)) return null;
 
   function hide() {
     setHidden(true);
@@ -43,18 +48,14 @@ export function NotifyBanner() {
     const s = await enablePush().catch(() => "off" as PushState);
     setBusy(false);
     setState(s);
-    if (s !== "on" && s !== "off") hide();
+    if (s === "on") testPush().catch(() => {});
   }
 
   return (
     <div className="notify-banner" role="region" aria-label="Activar avisos">
       <div className="notify-banner__text">
-        <b>Enterate cuando te escriben</b>
-        {state === "ios-install" ? (
-          <span className="muted small">En iPhone los avisos llegan solo con la app instalada: en Safari, Compartir → Agregar a inicio.</span>
-        ) : (
-          <span className="muted small">Activá los avisos. Son discretos: no dicen quién te escribió ni qué.</span>
-        )}
+        <b>{state === "off" ? "Enterate cuando te escriben" : "Los avisos no pueden llegarte"}</b>
+        <span className="muted small">{pushHelp(state, APP_NAME)}</span>
       </div>
       <div className="notify-banner__actions">
         {state === "off" && (

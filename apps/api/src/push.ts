@@ -35,15 +35,17 @@ if (pushEnabled) {
   setVapidDetails(subject, keys.publicKey, keys.privateKey);
 }
 
-export type PushPayload = { title: string; body: string; url: string; tag?: string };
+// always: mostrarla aunque la persona tenga la app abierta en esa pantalla (para la notificación de prueba)
+export type PushPayload = { title: string; body: string; url: string; tag?: string; always?: boolean };
 
 /**
  * Manda una notificación a todos los dispositivos de alguien.
  * Los textos son discretos a propósito: aparecen en la pantalla bloqueada.
  */
-export async function pushTo(userId: string, payload: PushPayload) {
-  if (!pushEnabled) return;
+export async function pushTo(userId: string, payload: PushPayload): Promise<number> {
+  if (!pushEnabled) return 0;
   const subs = await db.select().from(pushSubscription).where(eq(pushSubscription.userId, userId));
+  let sent = 0;
   await Promise.all(
     subs.map(async (s) => {
       try {
@@ -52,6 +54,7 @@ export async function pushTo(userId: string, payload: PushPayload) {
           JSON.stringify(payload),
           { TTL: 60 * 60 * 24 },
         );
+        sent++;
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
         // La suscripción ya no existe (desinstalaron la app, revocaron el permiso, etc.)
@@ -61,4 +64,5 @@ export async function pushTo(userId: string, payload: PushPayload) {
       }
     }),
   );
+  return sent;
 }

@@ -148,6 +148,8 @@ export const pushSubscription = pgTable("push_subscription", {
   endpoint: text("endpoint").notNull().unique(),
   p256dh: text("p256dh").notNull(),
   auth: text("auth").notNull(),
+  // Dominio desde el que se activó (las suscripciones son por dominio). null = de antes de guardarlo.
+  origin: text("origin"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("push_user_idx").on(t.userId)]);
 

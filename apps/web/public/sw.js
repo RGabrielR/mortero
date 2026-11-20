@@ -11,9 +11,13 @@ self.addEventListener("push", (event) => {
   }
   event.waitUntil(
     (async () => {
-      // Si la app ya está abierta y visible, no hace falta molestar con una notificación
+      // Solo se omite si la persona está mirando justo esa pantalla, en la ventana que tiene el foco.
+      // Antes alcanzaba con que la app estuviera "visible": en la compu una pestaña abierta atrás de otra
+      // ventana cuenta como visible, así que los avisos no aparecían nunca.
+      const path = new URL(data.url || "/", self.location.origin).pathname;
       const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      if (wins.some((w) => w.visibilityState === "visible")) return;
+      const looking = wins.some((w) => w.focused && w.visibilityState === "visible" && new URL(w.url).pathname === path);
+      if (looking && !data.always) return;
       await self.registration.showNotification(data.title, {
         body: data.body,
         icon: "/icon-192.png",

@@ -6,7 +6,7 @@ import { APP_NAME } from "../brand";
 import { AlbumViewer, duration, untilLabel } from "../components/AlbumViewer";
 import { Avatar } from "../components/Avatar";
 import { EyeIcon, LockIcon, PlusIcon, StarIcon } from "../components/Icons";
-import { disablePush, enablePush, pushState, type PushState } from "../push";
+import { disablePush, enablePush, pushHelp, pushState, testPush, type PushState } from "../push";
 import { BODY_TYPES, HIV_STATUS, LOOKING_FOR, POSITIONS, PRONOUNS, RELATIONSHIP, TRIBES } from "../options";
 
 type Form = Omit<Profile, "birthdate" | "age">;
@@ -52,24 +52,19 @@ const numOrNull = (s: string) => (s === "" ? null : Number(s));
 function NotificationsSetting() {
   const [state, setState] = useState<PushState | null>(null);
   const [busy, setBusy] = useState(false);
+  const [test, setTest] = useState("");
   useEffect(() => {
     pushState().then(setState).catch(() => setState("unsupported"));
   }, []);
   if (!state || state === "disabled") return null;
 
-  const text: Record<PushState, string> = {
-    on: "Te avisamos de mensajes nuevos y solicitudes cuando no tenés la app abierta. Los avisos no dicen quién te escribió ni qué.",
-    off: "Activalas para enterarte de mensajes nuevos con la app cerrada. Los avisos son discretos: no dicen quién te escribió ni qué.",
-    denied: "Bloqueaste las notificaciones para este sitio. Habilitalas en los ajustes del navegador.",
-    unsupported: "Este navegador no permite notificaciones.",
-    "ios-install": `En iPhone, primero agregá ${APP_NAME} a la pantalla de inicio (Compartir → Agregar a inicio) y abrila desde ahí.`,
-    disabled: "",
-  };
-
   async function toggle() {
     setBusy(true);
+    setTest("");
     try {
-      setState(state === "on" ? await disablePush() : await enablePush());
+      const next = state === "on" ? await disablePush() : await enablePush();
+      setState(next);
+      if (next === "on") await sendTest();
     } catch {
       setState(await pushState().catch(() => "unsupported" as const));
     } finally {
@@ -77,12 +72,18 @@ function NotificationsSetting() {
     }
   }
 
+  async function sendTest() {
+    setTest("Mandando…");
+    const sent = await testPush().catch(() => 0);
+    setTest(sent ? `Mandamos una de prueba a ${sent === 1 ? "tu dispositivo" : `tus ${sent} dispositivos`}. Si no la ves, revisá que el navegador tenga permiso para mostrar notificaciones en tu sistema.` : "No pudimos mandarla. Probá desactivarlas y activarlas de nuevo.");
+  }
+
   return (
     <section className="section">
       <div className="setting">
         <div>
           <h2 className="section__title" style={{ marginBottom: 4 }}>Notificaciones</h2>
-          <p className="muted small">{text[state]}</p>
+          <p className="muted small">{pushHelp(state, APP_NAME)}</p>
         </div>
         {(state === "on" || state === "off") && (
           <button className={`switch ${state === "on" ? "switch--on" : ""}`} role="switch" aria-checked={state === "on"} aria-label="Notificaciones" disabled={busy} onClick={toggle}>
@@ -90,6 +91,12 @@ function NotificationsSetting() {
           </button>
         )}
       </div>
+      {state === "on" && (
+        <p className="small" style={{ marginTop: 8 }}>
+          <button className="linkbtn" onClick={sendTest} disabled={busy}>Mandarme una de prueba</button>
+          {test && <span className="muted" role="status"> · {test}</span>}
+        </p>
+      )}
     </section>
   );
 }
