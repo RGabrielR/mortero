@@ -281,6 +281,10 @@ a.gcard:hover { background: var(--surface); }
 .req__msg { color: var(--muted); font-style: italic; }
 .member { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .member__actions { position: relative; flex: none; }
+.sheet--list { max-height: 88vh; }
+.invite-list { overflow-y: auto; min-height: 0; flex: 1; }
+.invite-list .member > :last-child { flex: none; }
+.gcard__icon--sm { width: 36px; height: 36px; font-size: var(--text-md); border-radius: var(--radius-lg); }
 .member__actions .menu { top: 28px; right: 0; }
 .menu .danger { color: var(--danger); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px); z-index: var(--z-toast); background: var(--surface-3); border: 1px solid var(--line); padding: 12px 16px; border-radius: var(--radius-xl); box-shadow: var(--shadow-pop); font-weight: 600; max-width: calc(100% - 32px); }
@@ -468,3 +472,14 @@ button.quote:hover { background: var(--surface-3); }
 .tile__reaction { position: absolute; top: 6px; right: 6px; z-index: var(--z-raised); width: 38px; height: 38px; border-radius: var(--radius-pill); background: var(--scrim); display: grid; place-items: center; }
 .tile__reaction--new { outline: 2px solid var(--accent); }
 .quicklink--full { grid-column: span 2; }
+
+/* ---------- Invitar gente: filtros de la lista ---------- */
+.invite-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; flex: none; }
+.invite-filters::-webkit-scrollbar { display: none; }
+.invite-filters .chip { flex: none; height: 30px; padding: 0 12px; font-size: var(--text-sm); }
+.invite-more { display: flex; flex-direction: column; gap: 10px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); flex: none; }
+.field--inline { flex-direction: row; align-items: center; gap: 8px; }
+.input--num { width: 64px; text-align: center; }
+.invite-count { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: none; }
+.invite-who { display: flex; flex-direction: column; line-height: 1.25; }
+.invite-who .dot { display: inline-block; vertical-align: middle; margin-right: 4px; }

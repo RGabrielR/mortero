@@ -19,7 +19,7 @@ Fase 1 (MVP) en marcha. Ya funciona:
 - Chat general con antispam: modo lento, cola con cuenta regresiva (podés editar o cancelar lo que está en cola), rotación y límites para cuentas nuevas.
 - Mensajes privados en tiempo real, con fotos y "visto".
 - Bloquear, reportar y borrar tu cuenta con todo lo asociado.
-- Grupos: cualquiera crea uno y queda como dueño. Se entra solo pidiendo ingreso, y el dueño o los moderadores aceptan o rechazan. Si te rechazan o te expulsan, esperás 7 días para volver a pedir. Hay lista de todos los grupos con búsqueda, roles (dueño, moderador, miembro), expulsiones, borrado de mensajes por moderación y reglas antispam configurables por grupo. Si el dueño se va, el grupo pasa a un moderador o al miembro más antiguo.
+- Grupos: cualquiera crea uno y queda como dueño. Se entra pidiendo ingreso (el dueño o los moderadores aceptan o rechazan) o aceptando una invitación del dueño o los moderadores: nadie queda adentro sin haberlo elegido. Si te rechazan o te expulsan, esperás 7 días para volver a pedir. Hay lista de todos los grupos con búsqueda, roles (dueño, moderador, miembro), expulsiones, borrado de mensajes por moderación y reglas antispam configurables por grupo. Si el dueño se va, el grupo pasa a un moderador o al miembro más antiguo.
 
 - Grilla de gente cerca, de la más cercana a la más lejana, con estado en línea y filtros: edad, altura, peso, contextura, rol, tribus, qué busca, relación, solo en línea y solo con foto. Se guarda solo una zona de unos 500 m (nunca la posición exacta), la distancia se muestra en tramos para que no se pueda triangular a nadie, y cada persona puede esconder su distancia o borrar su ubicación.
 
@@ -73,13 +73,13 @@ Editá `apps/api/src/db/schema.ts` y corré `npm run db:generate`. Las migracion
 
 Es un proyecto comunitario: toda ayuda suma, también si no programás.
 
-- **Ideas y debates** van en [Discusiones](https://github.com/RGabrielR/mortero/discussions).
-- **Diseño**: leé [docs/LOOK.md](docs/LOOK.md) y proponé en el [hilo de look and feel](https://github.com/RGabrielR/mortero/discussions/3).
-- **Código**: mirá los issues [`para empezar`](https://github.com/RGabrielR/mortero/labels/para%20empezar) y la guía [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Ideas y debates** van en [Discusiones](https://github.com/RGabrielR/qule.ar/discussions).
+- **Diseño**: leé [docs/LOOK.md](docs/LOOK.md) y proponé en el [hilo de look and feel](https://github.com/RGabrielR/qule.ar/discussions/3).
+- **Código**: mirá los issues [`para empezar`](https://github.com/RGabrielR/qule.ar/labels/para%20empezar) y la guía [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## El nombre
 
-La app se llama **qule.ar**: el nombre y el dominio son lo mismo. Arrancó como "mortero" y la charla del nombre quedó en el [hilo de Discusiones](https://github.com/RGabrielR/mortero/discussions/2). El repo, las carpetas y los contenedores todavía se llaman `mortero`: son nombres internos y se pueden cambiar más adelante.
+La app se llama **qule.ar**: el nombre y el dominio son lo mismo. Arrancó como "mortero" y la charla del nombre quedó en el [hilo de Discusiones](https://github.com/RGabrielR/qule.ar/discussions/2). El repo también se llama `qule.ar` (antes era `mortero`: los links y clones viejos redirigen solos). Las carpetas, los paquetes y los contenedores todavía se llaman `mortero`: son nombres internos y se pueden cambiar más adelante.
 
 ## Licencia
 

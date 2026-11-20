@@ -48,11 +48,11 @@ export function welcomeMail(to: string, name: string): Mail {
   return {
     to,
     subject: `Bienvenide a ${APP_NAME}`,
-    text: `${hi}\n\nYa tenés tu cuenta en ${APP_NAME}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.\n\nRecién arrancamos y somos pocas personas, así que te recomendamos pasar por el chat general y los grupos para conocer gente.\n\nEntrá: ${env.APP_URL}\n\nSi querés proponer ideas o sumarte a construirla: https://github.com/RGabrielR/mortero/discussions`,
+    text: `${hi}\n\nYa tenés tu cuenta en ${APP_NAME}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.\n\nRecién arrancamos y somos pocas personas, así que te recomendamos pasar por el chat general y los grupos para conocer gente.\n\nEntrá: ${env.APP_URL}\n\nSi querés proponer ideas o sumarte a construirla: https://github.com/RGabrielR/qule.ar/discussions`,
     html: layout(hi, [
       `Ya tenés tu cuenta en ${esc(APP_NAME)}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.`,
       "Recién arrancamos y somos pocas personas, así que te recomendamos pasar por el <b>chat general</b> y los <b>grupos</b> para conocer gente.",
-      `¿Tenés ideas? Sumate a <a href="https://github.com/RGabrielR/mortero/discussions" style="color:${c.link}">construirla entre todes</a>.`,
+      `¿Tenés ideas? Sumate a <a href="https://github.com/RGabrielR/qule.ar/discussions" style="color:${c.link}">construirla entre todes</a>.`,
     ], { label: `Entrar a ${APP_NAME}`, url: env.APP_URL }),
   };
 }

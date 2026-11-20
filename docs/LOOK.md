@@ -1,6 +1,6 @@
 # Look and feel
 
-Así se ve, se llama y se siente qule.ar. Esta es la guía oficial: todo lo nuevo la tiene que seguir, y `npm run lint` controla lo que se puede controlar solo. Las propuestas para cambiarla se charlan en el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3).
+Así se ve, se llama y se siente qule.ar. Esta es la guía oficial: todo lo nuevo la tiene que seguir, y `npm run lint` controla lo que se puede controlar solo. Las propuestas para cambiarla se charlan en el hilo [Look and feel](https://github.com/RGabrielR/qule.ar/discussions/3).
 
 ## La idea
 

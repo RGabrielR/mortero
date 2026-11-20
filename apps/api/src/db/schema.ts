@@ -193,7 +193,7 @@ export const groupMember = pgTable("group_member", {
 }, (t) => [primaryKey({ columns: [t.groupId, t.userId] })]);
 
 /**
- * Solicitudes de ingreso. Nadie puede meter a otra persona en un grupo: solo se entra pidiendo.
+ * Solicitudes de ingreso. Nadie puede meter a otra persona en un grupo: se entra pidiendo o aceptando una invitación (group_invite).
  * status: pending | accepted | rejected | cancelled | removed (expulsión, sirve para el período de espera)
  */
 export const groupJoinRequest = pgTable("group_join_request", {
@@ -208,6 +208,24 @@ export const groupJoinRequest = pgTable("group_join_request", {
 }, (t) => [
   index("gjr_group_status_idx").on(t.groupId, t.status),
   index("gjr_user_idx").on(t.userId, t.groupId),
+]);
+
+/**
+ * Invitaciones: dueño o moderadores invitan a alguien y esa persona elige si entra.
+ * Nadie queda adentro de un grupo sin haberlo aceptado.
+ * status: pending | accepted | declined | cancelled
+ */
+export const groupInvite = pgTable("group_invite", {
+  id: text("id").primaryKey(),
+  groupId: text("group_id").notNull().references(() => group.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  invitedBy: text("invited_by").references(() => user.id, { onDelete: "set null" }),
+  status: text("status").notNull().default("pending"),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("gi_group_status_idx").on(t.groupId, t.status),
+  index("gi_user_status_idx").on(t.userId, t.status),
 ]);
 
 export const groupMessage = pgTable("group_message", {

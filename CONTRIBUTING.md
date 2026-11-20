@@ -6,10 +6,10 @@ qule.ar es una app comunitaria, gratuita y de código abierto. No tiene empresa 
 
 | Qué | Dónde |
 |---|---|
-| Ideas, propuestas, preguntas, debates | [Discusiones](https://github.com/RGabrielR/mortero/discussions) |
-| Diseño, colores, tipografía, tono | el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3) (y [docs/LOOK.md](docs/LOOK.md)) |
-| La historia del nombre | el hilo [El nombre](https://github.com/RGabrielR/mortero/discussions/2) |
-| Bugs concretos y tareas ya acordadas | [Issues](https://github.com/RGabrielR/mortero/issues) |
+| Ideas, propuestas, preguntas, debates | [Discusiones](https://github.com/RGabrielR/qule.ar/discussions) |
+| Diseño, colores, tipografía, tono | el hilo [Look and feel](https://github.com/RGabrielR/qule.ar/discussions/3) (y [docs/LOOK.md](docs/LOOK.md)) |
+| La historia del nombre | el hilo [El nombre](https://github.com/RGabrielR/qule.ar/discussions/2) |
+| Bugs concretos y tareas ya acordadas | [Issues](https://github.com/RGabrielR/qule.ar/issues) |
 | Cambios de código | Pull requests |
 
 La regla: **las ideas arrancan en Discusiones**. Cuando una idea se acuerda, se convierte en un issue y alguien la toma.
@@ -17,7 +17,7 @@ La regla: **las ideas arrancan en Discusiones**. Cuando una idea se acuerda, se 
 ## Primeros pasos
 
 1. Leé el [README](README.md) para levantarlo en tu compu (no hace falta instalar Postgres).
-2. Mirá los issues con la etiqueta [`para empezar`](https://github.com/RGabrielR/mortero/labels/para%20empezar).
+2. Mirá los issues con la etiqueta [`para empezar`](https://github.com/RGabrielR/qule.ar/labels/para%20empezar).
 3. Comentá en el issue que lo vas a tomar, así no se pisan dos personas.
 4. Hacé un fork, una rama y mandá el pull request.
 
