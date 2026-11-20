@@ -457,6 +457,19 @@ button.quote:hover { background: var(--surface-3); }
 .notify-banner__text { flex: 1; display: grid; gap: 2px; min-width: 0; }
 .notify-banner__actions { flex: none; display: grid; gap: 4px; justify-items: center; }
 
+/* ---------- Aviso de versión nueva (arriba, para no chocar con el de notificaciones) ---------- */
+.update-banner {
+  position: fixed; left: 12px; right: 12px; z-index: var(--z-toast);
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  max-width: 520px; margin: 0 auto;
+  display: flex; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 10px 12px 10px 14px; border-radius: var(--radius-xl);
+  background: var(--surface-2); border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-pop);
+}
+.update-banner__text { min-width: 0; }
+.update-banner .row { flex: none; align-items: center; gap: 10px; }
+
 /* ---------- Toques y reacciones ---------- */
 .reaction-icon { display: block; }
 .reaction-picker { display: grid; grid-template-columns: repeat(4, 44px); gap: 2px; padding: 4px; }

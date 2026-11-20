@@ -4,6 +4,7 @@ import { api, ApiError, authClient, closeSocket, getSocket, type Me } from "./ap
 import { Admin } from "./pages/Admin";
 import { Login } from "./pages/Login";
 import { NotifyBanner } from "./components/NotifyBanner";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { Wordmark } from "./components/Wordmark";
 import { Logo } from "./components/Logo";
 import { APP_NAME } from "./brand";
@@ -71,6 +72,7 @@ export function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <UpdateBanner />
     </MeContext.Provider>
   );
 }

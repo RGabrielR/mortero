@@ -44,9 +44,33 @@ function brand(): Plugin {
   };
 }
 
+/**
+ * Versión de la web: un sello por cada build. Va dentro del código (__APP_VERSION__) y en /version.json.
+ * La app instalada en el celu no se recarga nunca sola, así que compara las dos para avisar que hay una nueva
+ * (ver components/UpdateBanner.tsx).
+ */
+function version(): Plugin {
+  const id = process.env.APP_VERSION || new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+  const json = JSON.stringify({ version: id });
+  return {
+    name: "version",
+    config: () => ({ define: { __APP_VERSION__: JSON.stringify(id) } }),
+    configureServer(server) {
+      server.middlewares.use("/version.json", (_req, res) => {
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Cache-Control", "no-store");
+        res.end(json);
+      });
+    },
+    generateBundle() {
+      this.emitFile({ type: "asset", fileName: "version.json", source: json });
+    },
+  };
+}
+
 // En desarrollo, Vite hace de proxy al API para que todo quede en el mismo origen (cookies de sesión).
 export default defineConfig({
-  plugins: [react(), brand()],
+  plugins: [react(), brand(), version()],
   server: {
     port: 5173,
     proxy: {
