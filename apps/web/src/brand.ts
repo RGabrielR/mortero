@@ -10,4 +10,4 @@
  * Las claves de localStorage ("mortero:filtros", etc.) y el evento "mortero:read" NO se renombran:
  * son internas y si cambian se pierden las preferencias que cada persona ya tiene guardadas.
  */
-export const APP_NAME = "mortero";
+export const APP_NAME = "qule.ar";

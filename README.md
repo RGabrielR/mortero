@@ -1,4 +1,4 @@
-# mortero
+# qule.ar
 
 App comunitaria, gratuita y de código abierto para conocer gente cerca y charlar en grupos.
 
@@ -7,7 +7,7 @@ App comunitaria, gratuita y de código abierto para conocer gente cerca y charla
 - **Grupos en vez de "explorar".** Hay un chat general para toda la app y grupos a los que pedís entrar.
 - **Chat sin acaparadores.** Un sistema de modo lento, cola y rotación hace que siempre aparezca gente nueva.
 
-> Solo para mayores de 18 años. El nombre es provisorio: [se está eligiendo](#el-nombre).
+> Solo para mayores de 18 años. Está en [qule.ar](https://qule.ar).
 
 ## Estado
 
@@ -79,7 +79,7 @@ Es un proyecto comunitario: toda ayuda suma, también si no programás.
 
 ## El nombre
 
-"mortero" es provisorio. El nombre definitivo se elige entre todes: las propuestas se juntan en el [hilo de Discusiones](https://github.com/RGabrielR/mortero/discussions/2) y las finalistas van a una encuesta en X (Twitter).
+La app se llama **qule.ar**: el nombre y el dominio son lo mismo. Arrancó como "mortero" y la charla del nombre quedó en el [hilo de Discusiones](https://github.com/RGabrielR/mortero/discussions/2). El repo, las carpetas y los contenedores todavía se llaman `mortero`: son nombres internos y se pueden cambiar más adelante.
 
 ## Licencia
 

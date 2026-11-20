@@ -1,6 +1,6 @@
 # Código de convivencia
 
-mortero es un espacio para gente LGBTIQ+ y aliada. Queremos que participar sea cómodo para todes.
+qule.ar es un espacio para gente LGBTIQ+ y aliada. Queremos que participar sea cómodo para todes.
 
 ## Lo que esperamos
 

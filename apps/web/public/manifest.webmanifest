@@ -1,6 +1,6 @@
 {
-  "name": "mortero",
-  "short_name": "mortero",
+  "name": "qule.ar",
+  "short_name": "qule.ar",
   "description": "App comunitaria, gratuita y de código abierto para conocer gente y charlar en grupos.",
   "start_url": "/",
   "display": "standalone",

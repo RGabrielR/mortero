@@ -31,7 +31,7 @@ function wasHidden() {
   }
 }
 
-/** Invita a instalar mortero como app. En iPhone explica los pasos, porque Safari no tiene botón. */
+/** Invita a instalar qule.ar como app. En iPhone explica los pasos, porque Safari no tiene botón. */
 export function InstallBanner() {
   const [, force] = useState(0);
   const [hidden, setHidden] = useState(wasHidden);

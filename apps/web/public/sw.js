@@ -1,9 +1,9 @@
-// Service worker de mortero: hace la app instalable y recibe notificaciones push.
+// Service worker de qule.ar: hace la app instalable y recibe notificaciones push.
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 
 self.addEventListener("push", (event) => {
-  let data = { title: "mortero", body: "Tenés novedades", url: "/" };
+  let data = { title: "qule.ar", body: "Tenés novedades", url: "/" };
   try {
     data = { ...data, ...event.data.json() };
   } catch {

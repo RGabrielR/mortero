@@ -1,6 +1,6 @@
-# Cómo sumarte a mortero
+# Cómo sumarte a qule.ar
 
-mortero es una app comunitaria, gratuita y de código abierto. No tiene empresa atrás: la armamos entre quienes quieran. Toda ayuda suma, también si no programás.
+qule.ar es una app comunitaria, gratuita y de código abierto. No tiene empresa atrás: la armamos entre quienes quieran. Toda ayuda suma, también si no programás.
 
 ## Dónde se habla cada cosa
 
@@ -8,7 +8,7 @@ mortero es una app comunitaria, gratuita y de código abierto. No tiene empresa 
 |---|---|
 | Ideas, propuestas, preguntas, debates | [Discusiones](https://github.com/RGabrielR/mortero/discussions) |
 | Diseño, colores, tipografía, tono | el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3) (y [docs/LOOK.md](docs/LOOK.md)) |
-| El nombre definitivo | el hilo [El nombre](https://github.com/RGabrielR/mortero/discussions/2) |
+| La historia del nombre | el hilo [El nombre](https://github.com/RGabrielR/mortero/discussions/2) |
 | Bugs concretos y tareas ya acordadas | [Issues](https://github.com/RGabrielR/mortero/issues) |
 | Cambios de código | Pull requests |
 

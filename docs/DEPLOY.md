@@ -1,6 +1,6 @@
-# Deploy de mortero
+# Deploy de qule.ar
 
-Guía para subir mortero a un servidor Linux con Docker y nginx. Todo corre en dos contenedores:
+Guía para subir qule.ar a un servidor Linux con Docker y nginx. Todo corre en dos contenedores:
 
 - `mortero-db`: Postgres.
 - `mortero-app`: el API, el chat en vivo y la web compilada, en un solo proceso.
@@ -39,7 +39,7 @@ VAPID_PRIVATE_KEY=...
 ADMIN_EMAILS=tu-email@ejemplo.com
 # Opcional, para mandar mails (bienvenida, recuperar contraseña):
 SMTP_URL=smtps://resend:API_KEY@smtp.resend.com:465
-MAIL_FROM=mortero <hola@DOMINIO>
+MAIL_FROM=qule.ar <hola@DOMINIO>
 # Opcional, para el login con Google:
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
@@ -71,7 +71,7 @@ docker run -d --name mortero-app --restart unless-stopped --network mortero \
   -v mortero-data:/data \
   -p 127.0.0.1:3010:3001 \
   mortero:latest
-docker logs -f mortero-app   # tiene que decir "mortero API escuchando"
+docker logs -f mortero-app   # tiene que decir "qule.ar API escuchando"
 ```
 
 Las migraciones de la base se aplican solas al arrancar. La app escucha solo en `127.0.0.1:3010`: el único acceso desde afuera es por nginx.

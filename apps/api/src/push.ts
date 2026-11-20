@@ -31,7 +31,7 @@ export const vapidPublicKey = keys.publicKey;
 export const pushEnabled = Boolean(keys.publicKey && keys.privateKey);
 
 if (pushEnabled) {
-  const subject = env.APP_URL.startsWith("https://") ? env.APP_URL : "mailto:noreply@mortero.invalid";
+  const subject = env.APP_URL.startsWith("https://") ? env.APP_URL : "mailto:noreply@qule.invalid";
   setVapidDetails(subject, keys.publicKey, keys.privateKey);
 }
 

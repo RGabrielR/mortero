@@ -1,6 +1,6 @@
 # Look and feel
 
-Así se ve y se siente mortero hoy. Es un punto de partida, no algo cerrado: las propuestas se charlan en el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3).
+Así se ve y se siente qule.ar hoy. Es un punto de partida, no algo cerrado: las propuestas se charlan en el hilo [Look and feel](https://github.com/RGabrielR/mortero/discussions/3).
 
 ## La idea
 
