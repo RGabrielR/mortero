@@ -21,6 +21,9 @@ export const env = {
   ADMIN_EMAILS: (process.env.ADMIN_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean),
   // Carpeta con la web compilada (en producción el API la sirve)
   WEB_DIST: process.env.WEB_DIST ?? path.join(root, "apps/web/dist"),
+  // Encabezado del que sale la IP real de cada persona (límite de intentos y sesiones). Tiene que ser uno que el
+  // proxy de adelante pise siempre: cf-connecting-ip con el túnel de Cloudflare, x-real-ip con el nginx de deploy/.
+  CLIENT_IP_HEADER: (process.env.CLIENT_IP_HEADER ?? "cf-connecting-ip").toLowerCase(),
 };
 
 if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_SECRET) {

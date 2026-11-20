@@ -105,6 +105,19 @@ Para restaurar la base:
 docker exec -i mortero-db pg_restore -U mortero -d mortero --clean < /opt/mortero/backups/db_FECHA.dump
 ```
 
+## Seguridad: la IP de cada persona
+
+El límite de intentos (login, registro, recuperar contraseña) y las sesiones usan la IP real de cada persona. El API la lee de **un solo encabezado**, que el proxy de adelante tiene que pisar siempre, así nadie la puede inventar. Se elige con `CLIENT_IP_HEADER` en `app.env`:
+
+| Cómo llega el tráfico al API | `CLIENT_IP_HEADER` |
+|---|---|
+| Túnel de Cloudflare directo al API | `cf-connecting-ip` (es el valor por defecto) |
+| nginx de `deploy/nginx.conf`, sin Cloudflare | `x-real-ip` |
+
+**Importante:** el API tiene que ser alcanzable **solo** por ese proxy (por eso escucha en `127.0.0.1`). Si alguien llega directo, puede mandar el encabezado inventado y saltearse el límite de intentos. Con el túnel de Cloudflare, nginx no debería quedar escuchando hacia afuera.
+
+La app también manda encabezados de seguridad (CSP, anti-iframe, HSTS en https): están en `apps/api/src/security.ts` y no hace falta configurarlos en el proxy.
+
 ## 7. Actualizar
 
 ```bash

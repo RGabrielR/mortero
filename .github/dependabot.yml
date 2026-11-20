@@ -1,0 +1,22 @@
+# Avisa cuando hay versiones nuevas de las dependencias, sobre todo las que arreglan problemas de seguridad.
+# Una vez por semana y agrupadas, para no llenar el repo de PRs. Cada PR pasa por el CI como cualquier otro.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Las de producción y las de desarrollo, cada grupo en un solo PR (las de seguridad igual llegan aparte)
+      produccion:
+        dependency-type: production
+        update-types: [minor, patch]
+      desarrollo:
+        dependency-type: development
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

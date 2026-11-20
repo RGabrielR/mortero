@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "./env.js";
-import { APP_NAME, fonts, mail as c, radii } from "./brand.js";
+import { APP_NAME, APP_SLOGAN, fonts, mail as c, radii } from "./brand.js";
 
 // Mails por SMTP: sirve cualquier proveedor (Resend, Brevo, Mailgun, un servidor propio…).
 // Sin SMTP_URL no se manda nada; en desarrollo el mail se muestra en la consola para poder probar.
@@ -38,7 +38,7 @@ function layout(title: string, paragraphs: string[], button?: { label: string; u
 <div style="max-width:480px;margin:0 auto;background:${c.card};border-radius:16px;padding:28px">
 <p style="margin:0 0 18px;font-size:24px;font-weight:800;letter-spacing:-0.03em;color:${c.accent}">${esc(APP_NAME)}</p>
 <h1 style="margin:0 0 14px;font-size:20px;color:${c.title}">${esc(title)}</h1>${p}${b}
-<p style="margin:24px 0 0;font-size:12px;color:${c.muted}">App comunitaria, gratuita y de código abierto.</p>
+<p style="margin:24px 0 0;font-size:12px;color:${c.muted}">${esc(APP_SLOGAN)} App comunitaria, gratuita y de código abierto.</p>
 </div></body></html>`;
 }
 
