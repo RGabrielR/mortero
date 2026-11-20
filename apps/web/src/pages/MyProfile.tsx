@@ -459,7 +459,8 @@ export function MyProfile() {
           )}
         </div>
         <p className="fineprint">
-          {APP_NAME} es software libre (AGPL-3.0), hecho en comunidad.
+          {APP_NAME} es software libre (AGPL-3.0), hecho en comunidad. Está en beta:{" "}
+          <Link to="/terminos">Términos</Link> · <Link to="/privacidad">Privacidad</Link>.
         </p>
       </section>
     </div>

@@ -90,7 +90,10 @@ export function Login() {
             {busy ? "Un toque…" : mode === "up" ? "Crear cuenta" : "Entrar"}
           </button>
         </form>
-        <p className="fineprint">Solo para mayores de 18. Al seguir aceptás tratar a los demás con respeto.</p>
+        <p className="fineprint">
+          Solo para mayores de 18. Al seguir aceptás tratar a los demás con respeto. Estamos en beta: leé los{" "}
+          <Link to="/terminos">Términos</Link> y la <Link to="/privacidad">Política de privacidad</Link>.
+        </p>
       </div>
     </div>
   );

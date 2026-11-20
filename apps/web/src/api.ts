@@ -74,6 +74,8 @@ export type Me = {
     incognito: boolean;
     suspendedAt: string | null;
     suspendReason: string | null;
+    /** Versión de los términos que aceptó (null: cuenta anterior a los términos) */
+    termsVersion: string | null;
   }) | null;
   photos: (Media & { id: string; position: number; isPrivate: boolean })[];
 };

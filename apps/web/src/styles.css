@@ -454,3 +454,34 @@ button.quote:hover { background: var(--surface-3); }
 }
 .notify-banner__text { flex: 1; display: grid; gap: 2px; min-width: 0; }
 .notify-banner__actions { flex: none; display: grid; gap: 4px; justify-items: center; }
+
+/* Marca "beta" al lado del nombre, mientras la app esté en prueba */
+.beta {
+  display: inline-block; vertical-align: super; margin-left: 0.1em;
+  font-family: var(--font); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  line-height: 1; padding: 3px 6px; border-radius: 999px;
+  color: var(--accent); background: var(--accent-soft);
+}
+.wordmark--big .beta { font-size: 13px; padding: 4px 8px; }
+
+/* Términos y privacidad */
+.legal { min-height: 100%; max-width: 680px; margin: 0 auto; padding: 0 16px 48px; }
+.legal__top {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 0 10px; background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.legal__top .wordmark { font-size: 22px; }
+.legal__body { line-height: 1.6; overflow-wrap: anywhere; }
+.legal__body h1 { font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; font-size: 30px; line-height: 1.15; margin: 28px 0 8px; }
+.legal__body h2 { font-family: var(--display); font-weight: 600; font-size: 20px; margin: 32px 0 8px; }
+.legal__body p { margin: 0 0 12px; }
+.legal__body ul { margin: 0 0 12px; padding-left: 22px; display: grid; gap: 6px; }
+.legal__body ul ul { margin: 6px 0 0; }
+.legal__body a { color: var(--accent-2); }
+.legal__body strong { color: var(--text); }
+.legal__body blockquote {
+  margin: 16px 0; padding: 12px 14px; border-left: 3px solid var(--line); border-radius: 0 10px 10px 0;
+  background: var(--surface); color: var(--muted); font-size: 13px;
+}
+.legal__foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; }
+.legal__foot a, .fineprint a { color: var(--accent-2); }

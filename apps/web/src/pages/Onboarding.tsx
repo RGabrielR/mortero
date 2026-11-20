@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { api, authClient } from "../api";
 import { useMe } from "../App";
 import { APP_NAME } from "../brand";
@@ -17,6 +17,7 @@ export function Onboarding() {
   const [displayName, setDisplayName] = useState(me?.user.name ?? "");
   const [birthdate, setBirthdate] = useState("");
   const [adult, setAdult] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -25,7 +26,7 @@ export function Onboarding() {
     setError("");
     setBusy(true);
     try {
-      await api("/me/profile", { method: "PUT", json: { displayName, birthdate } });
+      await api("/me/profile", { method: "PUT", json: { displayName, birthdate, acceptTerms } });
       await reload();
       nav("/yo?nuevo=1", { replace: true });
     } catch (err) {
@@ -55,8 +56,15 @@ export function Onboarding() {
           <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
           <span>Confirmo que tengo 18 años o más.</span>
         </label>
+        <label className="check">
+          <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
+          <span>
+            Leí y acepto los <Link to="/terminos" target="_blank">Términos</Link> y la{" "}
+            <Link to="/privacidad" target="_blank">Política de privacidad</Link>. Sé que {APP_NAME} está en beta.
+          </span>
+        </label>
         {error && <p className="error" role="alert">{error}</p>}
-        <button className="btn btn--primary" disabled={!adult || busy}>{busy ? "Un toque…" : `Entrar a ${APP_NAME}`}</button>
+        <button className="btn btn--primary" disabled={!adult || !acceptTerms || busy}>{busy ? "Un toque…" : `Entrar a ${APP_NAME}`}</button>
         <button
           type="button"
           className="btn btn--ghost"
