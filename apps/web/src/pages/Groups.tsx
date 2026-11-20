@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { api, getSocket, ROLE_LABEL, type GroupListing, type MyGroup } from "../api";
+import { api, getSocket, ROLE_LABEL, type GroupListing, type MyGroup, type MyInvite } from "../api";
 import { PlusIcon } from "../components/Icons";
+import { MyInvites } from "../components/Invite";
 import { JoinButton } from "../components/JoinButton";
 
 export function Groups() {
@@ -12,7 +13,11 @@ export function Groups() {
   const [q, setQ] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const loadMine = useCallback(() => api<MyGroup[]>("/groups").then(setMine).catch(() => {}), []);
+  const [invites, setInvites] = useState<MyInvite[]>([]);
+  const loadMine = useCallback(() => {
+    api<MyGroup[]>("/groups").then(setMine).catch(() => {});
+    api<MyInvite[]>("/invites").then(setInvites).catch(() => {});
+  }, []);
   const loadAll = useCallback(
     (query = q) => api<GroupListing[]>(`/groups/all?q=${encodeURIComponent(query)}`).then(setAll).catch(() => {}),
     [q],
@@ -25,9 +30,9 @@ export function Groups() {
       loadMine();
       if (tab === "all") loadAll();
     };
-    for (const ev of ["group:request", "group:accepted", "group:rejected", "group:removed", "group:gone", "group:role"]) s.on(ev, refresh);
+    for (const ev of ["group:request", "group:accepted", "group:rejected", "group:removed", "group:gone", "group:role", "group:invite"]) s.on(ev, refresh);
     return () => {
-      for (const ev of ["group:request", "group:accepted", "group:rejected", "group:removed", "group:gone", "group:role"]) s.off(ev, refresh);
+      for (const ev of ["group:request", "group:accepted", "group:rejected", "group:removed", "group:gone", "group:role", "group:invite"]) s.off(ev, refresh);
     };
   }, [loadMine, loadAll, tab]);
 
@@ -50,6 +55,8 @@ export function Groups() {
       </div>
 
       {tab === "mine" ? (
+        <>
+        <MyInvites invites={invites} onChange={loadMine} />
         <ul className="glist">
           {mine?.map((g) => (
             <li key={g.id}>
@@ -73,6 +80,7 @@ export function Groups() {
             </li>
           )}
         </ul>
+        </>
       ) : (
         <>
           <div className="searchbar">
@@ -140,7 +148,7 @@ function CreateGroup({ onClose }: { onClose: () => void }) {
           <span>Descripción</span>
           <textarea className="input" rows={3} maxLength={300} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="¿De qué va el grupo?" />
         </label>
-        <p className="muted small">Vas a ser el dueño. La gente entra solo pidiendo ingreso, y vos o tus moderadores aceptan o rechazan.</p>
+        <p className="muted small">Vas a ser el dueño. Se entra pidiendo ingreso o aceptando una invitación tuya o de tus moderadores.</p>
         {error && <p className="error" role="alert">{error}</p>}
         <div className="row">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>

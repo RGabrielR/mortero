@@ -168,6 +168,20 @@ export type GroupInfo = GroupListing & {
 export type JoinRequest = { id: string; message: string | null; createdAt: string; user: Author };
 export type Member = Author & { role: Role; joinedAt: string };
 
+/** Dónde está una persona respecto de un grupo, para invitarla. */
+export type InviteState = "member" | "invited" | "requested" | "declined" | null;
+export type InviteCandidate = Author & { state: InviteState };
+export type InvitableGroup = { id: string; name: string; state: InviteState };
+/** Invitación pendiente de un grupo (la ven dueño y moderadores). */
+export type SentInvite = { id: string; createdAt: string; user: Author };
+/** Invitación que me mandaron. */
+export type MyInvite = {
+  id: string;
+  createdAt: string;
+  group: { id: string; name: string; description: string | null; memberCount: number };
+  invitedBy: Author | null;
+};
+
 export const ROLE_LABEL: Record<Role, string> = { owner: "Dueño", moderator: "Moderador", member: "Miembro" };
 
 export type ConversationSummary = { id: string; other: Author; last: Dm; unread: number };

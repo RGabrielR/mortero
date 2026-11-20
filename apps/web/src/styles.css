@@ -281,6 +281,10 @@ a.gcard:hover { background: var(--surface); }
 .req__msg { color: var(--muted); font-style: italic; }
 .member { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .member__actions { position: relative; flex: none; }
+.sheet--list { max-height: 88vh; }
+.invite-list { overflow-y: auto; min-height: 0; flex: 1; }
+.invite-list .member > :last-child { flex: none; }
+.gcard__icon--sm { width: 36px; height: 36px; font-size: var(--text-md); border-radius: var(--radius-lg); }
 .member__actions .menu { top: 28px; right: 0; }
 .menu .danger { color: var(--danger); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px); z-index: var(--z-toast); background: var(--surface-3); border: 1px solid var(--line); padding: 12px 16px; border-radius: var(--radius-xl); box-shadow: var(--shadow-pop); font-weight: 600; max-width: calc(100% - 32px); }

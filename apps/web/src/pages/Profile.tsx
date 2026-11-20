@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import { api, type PublicProfile } from "../api";
 import { BackIcon, LockIcon, StarIcon } from "../components/Icons";
 import { useMe } from "../App";
+import { InviteToGroups } from "../components/Invite";
 import { ReportDialog } from "../components/ReportDialog";
 import { AlbumGrid, AlbumViewer, untilLabel } from "../components/AlbumViewer";
 
@@ -221,6 +222,8 @@ export function ProfilePage() {
             )}
           </div>
         )}
+        {!p.isMe && <InviteToGroups userId={p.id} name={p.displayName} />}
+
         {!p.isMe && (
           <div className="profile__safety">
             {confirmBlock ? (
