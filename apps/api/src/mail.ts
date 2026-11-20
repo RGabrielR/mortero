@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "./env.js";
-import { APP_NAME } from "./brand.js";
+import { APP_NAME, fonts, mail as c, radii } from "./brand.js";
 
 // Mails por SMTP: sirve cualquier proveedor (Resend, Brevo, Mailgun, un servidor propio…).
 // Sin SMTP_URL no se manda nada; en desarrollo el mail se muestra en la consola para poder probar.
@@ -26,17 +26,19 @@ export async function sendMail(mail: Mail) {
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
-/** Plantilla simple: se ve bien en clientes claros y oscuros. */
+/** Plantilla simple: se ve bien en clientes claros y oscuros. Los colores salen de la marca (packages/brand). */
+const FONT = `${fonts.text.family},system-ui,-apple-system,'Segoe UI',sans-serif`;
+
 function layout(title: string, paragraphs: string[], button?: { label: string; url: string }) {
-  const p = paragraphs.map((t) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.5;color:#2b2730">${t}</p>`).join("");
+  const p = paragraphs.map((t) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.5;color:${c.text}">${t}</p>`).join("");
   const b = button
-    ? `<p style="margin:22px 0"><a href="${esc(button.url)}" style="background:#ff6a3d;color:#1a0d08;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px;display:inline-block">${esc(button.label)}</a></p>`
+    ? `<p style="margin:22px 0"><a href="${esc(button.url)}" style="background:${c.accent};color:${c.accentInk};text-decoration:none;font-weight:700;padding:12px 22px;border-radius:${radii.pill};display:inline-block">${esc(button.label)}</a></p>`
     : "";
-  return `<!doctype html><html><body style="margin:0;padding:24px;background:#f4f1f6;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif">
-<div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:28px">
-<p style="margin:0 0 18px;font-size:24px;font-weight:800;letter-spacing:-0.03em;color:#ff6a3d">${esc(APP_NAME)}</p>
-<h1 style="margin:0 0 14px;font-size:20px;color:#141216">${esc(title)}</h1>${p}${b}
-<p style="margin:24px 0 0;font-size:12px;color:#8a8392">App comunitaria, gratuita y de código abierto.</p>
+  return `<!doctype html><html><body style="margin:0;padding:24px;background:${c.bg};font-family:${FONT}">
+<div style="max-width:480px;margin:0 auto;background:${c.card};border-radius:16px;padding:28px">
+<p style="margin:0 0 18px;font-size:24px;font-weight:800;letter-spacing:-0.03em;color:${c.accent}">${esc(APP_NAME)}</p>
+<h1 style="margin:0 0 14px;font-size:20px;color:${c.title}">${esc(title)}</h1>${p}${b}
+<p style="margin:24px 0 0;font-size:12px;color:${c.muted}">App comunitaria, gratuita y de código abierto.</p>
 </div></body></html>`;
 }
 
@@ -46,11 +48,11 @@ export function welcomeMail(to: string, name: string): Mail {
   return {
     to,
     subject: `Bienvenide a ${APP_NAME}`,
-    text: `${hi}\n\nYa tenés tu cuenta en ${APP_NAME}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.\n\nRecién arrancamos y somos pocas personas, así que te recomendamos pasar por el chat general y los grupos para conocer gente.\n\nEntrá: ${env.APP_URL}\n\nSi querés proponer ideas o sumarte a construirla: https://github.com/RGabrielR/mortero/discussions`,
+    text: `${hi}\n\nYa tenés tu cuenta en ${APP_NAME}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.\n\nRecién arrancamos y somos pocas personas, así que te recomendamos pasar por el chat general y los grupos para conocer gente.\n\nEntrá: ${env.APP_URL}\n\nSi querés proponer ideas o sumarte a construirla: https://github.com/RGabrielR/qule.ar/discussions`,
     html: layout(hi, [
       `Ya tenés tu cuenta en ${esc(APP_NAME)}. Es una app comunitaria, gratuita y de código abierto: todo lo que en otras apps se paga, acá viene incluido.`,
       "Recién arrancamos y somos pocas personas, así que te recomendamos pasar por el <b>chat general</b> y los <b>grupos</b> para conocer gente.",
-      `¿Tenés ideas? Sumate a <a href="https://github.com/RGabrielR/mortero/discussions" style="color:#e2532a">construirla entre todes</a>.`,
+      `¿Tenés ideas? Sumate a <a href="https://github.com/RGabrielR/qule.ar/discussions" style="color:${c.link}">construirla entre todes</a>.`,
     ], { label: `Entrar a ${APP_NAME}`, url: env.APP_URL }),
   };
 }

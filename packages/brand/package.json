@@ -1,0 +1,9 @@
+{
+  "name": "@mortero/brand",
+  "private": true,
+  "type": "module",
+  "description": "La marca de qule.ar en un solo lugar: nombre, colores, temas, tipografía y escalas.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

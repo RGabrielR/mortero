@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { api, getSocket, ROLE_LABEL, type GroupInfo as Info, type JoinRequest, type Member, type SpamRules } from "../api";
+import { api, getSocket, ROLE_LABEL, type GroupInfo as Info, type JoinRequest, type Member, type SentInvite, type SpamRules } from "../api";
 import { useMe } from "../App";
 import { Avatar } from "../components/Avatar";
-import { BackIcon } from "../components/Icons";
+import { BackIcon, PlusIcon } from "../components/Icons";
+import { InvitePeopleSheet } from "../components/Invite";
 
 export function GroupInfo() {
   const { id = "" } = useParams();
@@ -12,6 +13,8 @@ export function GroupInfo() {
   const [info, setInfo] = useState<Info | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [requests, setRequests] = useState<JoinRequest[]>([]);
+  const [invites, setInvites] = useState<SentInvite[]>([]);
+  const [inviting, setInviting] = useState(false);
   const [error, setError] = useState("");
   const [memberMenu, setMemberMenu] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<null | "leave" | "delete">(null);
@@ -25,8 +28,17 @@ export function GroupInfo() {
       setInfo(g);
       if (!g.role) return nav(`/grupos/${id}`, { replace: true });
       setMembers(await api<Member[]>(`/groups/${id}/members`));
-      if (g.role === "owner" || g.role === "moderator") setRequests(await api<JoinRequest[]>(`/groups/${id}/requests`));
-      else setRequests([]);
+      if ((g.role === "owner" || g.role === "moderator") && !g.isGeneral) {
+        const [reqs, invs] = await Promise.all([
+          api<JoinRequest[]>(`/groups/${id}/requests`),
+          api<SentInvite[]>(`/groups/${id}/invites`),
+        ]);
+        setRequests(reqs);
+        setInvites(invs);
+      } else {
+        setRequests([]);
+        setInvites([]);
+      }
     } catch {
       nav("/grupos", { replace: true });
     }
@@ -71,7 +83,7 @@ export function GroupInfo() {
 
       <section className="section">
         {info.description && <p className="profile__about">{info.description}</p>}
-        <p className="muted small" style={{ marginTop: 8 }}>
+        <p className="muted small hint">
           {info.memberCount} {info.memberCount === 1 ? "miembro" : "miembros"} · Tu rol: {ROLE_LABEL[info.role!]}
         </p>
       </section>
@@ -79,7 +91,7 @@ export function GroupInfo() {
       <section className="section">
         <div className="setting">
           <div>
-            <h2 className="section__title" style={{ marginBottom: 4 }}>Avisos de este grupo</h2>
+            <h2 className="section__title section__title--tight">Avisos de este grupo</h2>
             <p className="muted small">
               {info.muted
                 ? "Silenciado: solo te avisamos si alguien te responde."
@@ -126,9 +138,30 @@ export function GroupInfo() {
               ))}
             </ul>
           )}
-          <p className="muted small" style={{ marginTop: 10 }}>Si rechazás a alguien, puede volver a pedir ingreso en 7 días.</p>
+          <p className="muted small hint">Si rechazás a alguien, puede volver a pedir ingreso en 7 días.</p>
         </section>
       )}
+
+      {isMod && !info.isGeneral && (
+        <section className="section">
+          <h2 className="section__title">Invitaciones <span className="muted">{invites.length}</span></h2>
+          <button className="btn btn--primary" onClick={() => setInviting(true)}><PlusIcon /> Invitar gente</button>
+          {invites.length > 0 && (
+            <ul className="members invite-sent">
+              {invites.map((inv) => (
+                <li key={inv.id} className="member">
+                  <Link to={`/perfil/${inv.user.id}`} className="member__who">
+                    <Avatar src={inv.user.photo} name={inv.user.name} size={40} />
+                    <span><b>{inv.user.name}</b> <span className="muted small">· sin responder</span></span>
+                  </Link>
+                  <button className="linkbtn small" onClick={() => act(() => api(`/groups/${id}/invites/${inv.id}`, { method: "DELETE" }))}>Cancelar</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+      {inviting && <InvitePeopleSheet groupId={id} groupName={info.name} onClose={() => setInviting(false)} onChange={load} />}
 
       {!info.isGeneral && (
         <section className="section">

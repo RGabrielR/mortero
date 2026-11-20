@@ -196,7 +196,7 @@ export const groupMember = pgTable("group_member", {
 }, (t) => [primaryKey({ columns: [t.groupId, t.userId] })]);
 
 /**
- * Solicitudes de ingreso. Nadie puede meter a otra persona en un grupo: solo se entra pidiendo.
+ * Solicitudes de ingreso. Nadie puede meter a otra persona en un grupo: se entra pidiendo o aceptando una invitación (group_invite).
  * status: pending | accepted | rejected | cancelled | removed (expulsión, sirve para el período de espera)
  */
 export const groupJoinRequest = pgTable("group_join_request", {
@@ -211,6 +211,24 @@ export const groupJoinRequest = pgTable("group_join_request", {
 }, (t) => [
   index("gjr_group_status_idx").on(t.groupId, t.status),
   index("gjr_user_idx").on(t.userId, t.groupId),
+]);
+
+/**
+ * Invitaciones: dueño o moderadores invitan a alguien y esa persona elige si entra.
+ * Nadie queda adentro de un grupo sin haberlo aceptado.
+ * status: pending | accepted | declined | cancelled
+ */
+export const groupInvite = pgTable("group_invite", {
+  id: text("id").primaryKey(),
+  groupId: text("group_id").notNull().references(() => group.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  invitedBy: text("invited_by").references(() => user.id, { onDelete: "set null" }),
+  status: text("status").notNull().default("pending"),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("gi_group_status_idx").on(t.groupId, t.status),
+  index("gi_user_status_idx").on(t.userId, t.status),
 ]);
 
 export const groupMessage = pgTable("group_message", {
@@ -251,3 +269,27 @@ export const directMessage = pgTable("direct_message", {
   readAt: timestamp("read_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("dm_conv_idx").on(t.conversationId, t.createdAt)]);
+
+// ---------- Toques y reacciones ----------
+
+/** Las reacciones que existen (los íconos están en apps/web/public/reacciones). */
+export const REACTIONS = ["hola", "fuego", "rayo", "lengua", "chispa", "ojitos", "ganas", "gotas"] as const;
+
+/** Un toque: avisarle a alguien que te gusta, con una reacción. A diferencia de la estrella, la otra persona se entera. */
+export const toque = pgTable("toque", {
+  id: text("id").primaryKey(),
+  fromId: text("from_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  toId: text("to_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  seenAt: timestamp("seen_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("toque_to_idx").on(t.toId, t.createdAt), index("toque_pair_idx").on(t.fromId, t.toId, t.createdAt)]);
+
+/** Reacción a un mensaje (privado o de grupo). Una por persona por mensaje. */
+export const reaction = pgTable("reaction", {
+  messageId: text("message_id").notNull(),
+  scope: text("scope").notNull(), // "dm" | "group"
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [primaryKey({ columns: [t.messageId, t.userId] }), index("reaction_msg_idx").on(t.messageId)]);

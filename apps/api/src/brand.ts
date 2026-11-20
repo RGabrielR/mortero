@@ -1,6 +1,6 @@
 /**
- * Nombre de la app: título de las notificaciones, mails y mensajes de error.
- * Para renombrarla, cambiá esto y APP_NAME en apps/web/src/brand.ts.
+ * La marca vive en packages/brand (nombre, colores de los mails, etc.). Esto la re-exporta para que
+ * el resto del API importe de "./brand.js" como siempre.
  * El remitente de los mails se configura aparte, con la variable MAIL_FROM.
  */
-export const APP_NAME = "qule.ar";
+export * from "@mortero/brand";

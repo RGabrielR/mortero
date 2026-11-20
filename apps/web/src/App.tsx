@@ -4,9 +4,11 @@ import { api, ApiError, authClient, closeSocket, getSocket, type Me } from "./ap
 import { Admin } from "./pages/Admin";
 import { Login } from "./pages/Login";
 import { NotifyBanner } from "./components/NotifyBanner";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { TermsBanner } from "./components/TermsBanner";
 import { Legal } from "./pages/Legal";
 import { Wordmark } from "./components/Wordmark";
+import { Logo } from "./components/Logo";
 import { APP_NAME } from "./brand";
 import { ForgotPassword, ResetPassword } from "./pages/Password";
 import { Onboarding } from "./pages/Onboarding";
@@ -19,7 +21,7 @@ import { ProfilePage } from "./pages/Profile";
 import { MyProfile } from "./pages/MyProfile";
 import { ChatIcon, GridIcon, GroupIcon, UserIcon } from "./components/Icons";
 import { Nearby } from "./pages/Nearby";
-import { Favorites, Views } from "./pages/People";
+import { Favorites, Toques, Views } from "./pages/People";
 
 type MeState = { me: Me | null; loading: boolean; reload: () => Promise<void> };
 const MeContext = createContext<MeState>({ me: null, loading: true, reload: async () => {} });
@@ -46,7 +48,7 @@ export function App() {
     reload();
   }, [reload]);
 
-  if (loading) return <div className="splash"><Wordmark /></div>;
+  if (loading) return <div className="splash"><Logo className="splash__logo" /></div>;
 
   return (
     <MeContext.Provider value={{ me, loading, reload }}>
@@ -70,10 +72,12 @@ export function App() {
           <Route path="/yo" element={<MyProfile />} />
           <Route path="/visitas" element={<Views />} />
           <Route path="/favoritos" element={<Favorites />} />
+          <Route path="/toques" element={<Toques />} />
           <Route path="/admin" element={<Admin />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <UpdateBanner />
     </MeContext.Provider>
   );
 }
@@ -94,6 +98,7 @@ function Suspended() {
   return (
     <div className="auth">
       <div className="auth__hero">
+        <Logo className="auth__logo" />
         <Wordmark big />
       </div>
       <div className="auth__card">
@@ -125,9 +130,10 @@ function Shell() {
 
   // Solicitudes pendientes en grupos que modero + avisos de grupos
   useEffect(() => {
+    // Solicitudes de los grupos que modero + invitaciones que me mandaron
     const refresh = () =>
-      api<{ pendingCount: number }[]>("/groups")
-        .then((list) => setPending(list.reduce((n, g) => n + g.pendingCount, 0)))
+      Promise.all([api<{ pendingCount: number }[]>("/groups"), api<unknown[]>("/invites")])
+        .then(([list, invites]) => setPending(list.reduce((n, g) => n + g.pendingCount, 0) + invites.length))
         .catch(() => {});
     refresh();
     const s = getSocket();
@@ -135,17 +141,23 @@ function Shell() {
     const accepted = (p: { groupId: string; name: string }) => show(`Te aceptaron en ${p.name}`, `/grupos/${p.groupId}`);
     const rejected = (p: { name: string }) => show(`No te aceptaron en ${p.name}`);
     const removed = (p: { name: string }) => show(`Te sacaron de ${p.name}`);
+    const invited = (p: { name?: string }) => {
+      refresh();
+      if (p.name) show(`Te invitaron a ${p.name}`, "/grupos");
+    };
     s.on("group:request", refresh);
     s.on("group:role", refresh);
     s.on("group:accepted", accepted);
     s.on("group:rejected", rejected);
     s.on("group:removed", removed);
+    s.on("group:invite", invited);
     return () => {
       s.off("group:request", refresh);
       s.off("group:role", refresh);
       s.off("group:accepted", accepted);
       s.off("group:rejected", rejected);
       s.off("group:removed", removed);
+      s.off("group:invite", invited);
     };
   }, [loc.pathname]);
 

@@ -17,7 +17,7 @@ nginx queda adelante y se encarga del HTTPS. Se usan comandos `docker` sueltos, 
 
 ```bash
 sudo mkdir -p /opt/mortero && sudo chown "$USER" /opt/mortero
-git clone https://github.com/RGabrielR/mortero.git /opt/mortero/src
+git clone https://github.com/RGabrielR/qule.ar.git /opt/mortero/src
 cd /opt/mortero/src
 ```
 

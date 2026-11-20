@@ -20,9 +20,9 @@
 ### Grupos
 - **Chat general:** todas las cuentas lo integran automáticamente.
 - **Cualquiera puede crear un grupo.** Quien lo crea es su dueño.
-- **Nadie puede meter a otra persona en un grupo.** La única forma de entrar es pedirlo:
-  1. Desde la lista de todos los grupos, alguien que no es miembro manda una **solicitud de ingreso** (con un mensaje opcional).
-  2. Las personas del grupo con permiso para aprobar (dueño y moderadores) la **aceptan o rechazan**.
+- **Nadie puede meter a otra persona en un grupo.** Siempre entra quien eligió entrar, de una de estas dos formas:
+  1. **Pidiendo ingreso:** desde la lista de todos los grupos, alguien que no es miembro manda una **solicitud** (con un mensaje opcional), y el dueño o los moderadores la **aceptan o rechazan**.
+  2. **Con una invitación:** el dueño o los moderadores invitan a alguien (desde la info del grupo o desde su perfil), y esa persona **acepta o no**. Si la rechaza, no se le puede volver a invitar por 7 días. Un grupo puede tener hasta 50 invitaciones sin responder.
   3. Cualquier miembro puede **salirse** cuando quiera.
 - Roles por grupo:
   | Rol | Puede |

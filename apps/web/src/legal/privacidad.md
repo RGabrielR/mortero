@@ -8,9 +8,9 @@ En qule.ar tratamos datos muy personales: quién sos, qué buscás y, si lo cont
 
 ## 1. Quién cuida tus datos
 
-Las personas voluntarias que mantienen qule.ar. El código es abierto: cualquiera puede ver en [GitHub](https://github.com/RGabrielR/mortero) qué hace la app con tus datos.
+Las personas voluntarias que mantienen qule.ar. El código es abierto: cualquiera puede ver en [GitHub](https://github.com/RGabrielR/qule.ar) qué hace la app con tus datos.
 
-**Contacto:** por ahora, en las [Discusiones del proyecto](https://github.com/RGabrielR/mortero/discussions). Para pedidos sobre tus datos, **no publiques nada personal ahí**: dejá un mensaje pidiendo que te contactemos y seguimos por privado. Pronto vamos a sumar un mail.
+**Contacto:** por ahora, en las [Discusiones del proyecto](https://github.com/RGabrielR/qule.ar/discussions). Para pedidos sobre tus datos, **no publiques nada personal ahí**: dejá un mensaje pidiendo que te contactemos y seguimos por privado. Pronto vamos a sumar un mail.
 
 ## 2. Qué datos guardamos
 
@@ -35,7 +35,7 @@ Las personas voluntarias que mantienen qule.ar. El código es abierto: cualquier
 
 **Datos técnicos:**
 
-- La dirección IP y el navegador desde el que entrás, para mantener tu sesión y detectar accesos raros.
+- La dirección IP y el navegador desde el que entrás, para mantener tu sesión y detectar accesos raros. Se guardan lo que dura la sesión: hasta 7 días sin usar la app, o hasta que cerrás sesión.
 - Si activás las notificaciones, un identificador que nos da tu navegador para mandártelas.
 - Algunas preferencias quedan guardadas solo en tu dispositivo, como los filtros. No usamos cookies de publicidad ni de seguimiento: la única cookie es la de tu sesión.
 
@@ -55,13 +55,13 @@ Solo para que la app funcione: mostrar tu perfil, la gente cerca y los grupos, m
 
 ## 5. Dónde están y quién más los ve
 
-**Dónde se guardan:** en un servidor alquilado (VPS) en Europa. Ahí están la base de datos, las fotos, los videos y los backups.
+**Dónde se guardan:** en un servidor alquilado (VPS) de Contabo, en Europa. Ahí están la base de datos, las fotos, los videos y los backups. La conexión con el servidor va cifrada, pero **los datos guardados en el servidor no están cifrados**: el disco no lo está.
 
 **Quién los ve:**
 
 - **Otras personas de la app:** ven tu perfil, tus fotos públicas y tu distancia aproximada, si no la ocultaste. Tus álbumes privados los ve solo quien vos elijas.
 - **Moderación:** para revisar un reporte, quien modera puede ver el mensaje o el perfil reportado.
-- **Quienes mantienen el servidor:** técnicamente pueden acceder a la base de datos. Hoy los mensajes **no están cifrados de punta a punta**. Solo acceden cuando hace falta para arreglar un problema o por una orden judicial.
+- **Quienes mantienen el servidor:** técnicamente pueden acceder a la base de datos y a los archivos. Hoy los mensajes **no están cifrados de punta a punta**, y lo guardado en el servidor tampoco está cifrado. Solo acceden cuando hace falta para arreglar un problema o por una orden judicial.
 - **Proveedores que usamos para que la app funcione:**
   - **Cloudflare** (Estados Unidos): por ahí pasa el tráfico entre tu celu y el servidor, para que la conexión sea segura y para proteger la app de ataques. Técnicamente, el contenido pasa por sus equipos.
   - **Notificaciones:** las entrega el servicio de tu navegador o teléfono (Google, Apple o Mozilla). Solo reciben un texto genérico como "Tenés un mensaje nuevo", sin nombres ni contenido.
@@ -69,7 +69,7 @@ Solo para que la app funcione: mostrar tu perfil, la gente cerca y los grupos, m
   - **Google**, solo si elegís entrar con Google.
 - **Autoridades:** solo si una orden judicial nos obliga.
 
-**Transferencia internacional:** el servidor está en Europa y algunos proveedores, en Estados Unidos. Al usar qule.ar aceptás que tus datos se guarden y pasen por esos países, que pueden tener leyes de protección distintas a las nuestras (Ley 25.326, art. 12).
+**Transferencia internacional:** el servidor está en Europa (Contabo) y algunos proveedores, en Estados Unidos. Al usar qule.ar aceptás que tus datos se guarden y pasen por esos países, que pueden tener leyes de protección distintas a las nuestras (Ley 25.326, art. 12).
 
 ## 6. Cuánto tiempo los guardamos
 
@@ -84,10 +84,11 @@ Solo para que la app funcione: mostrar tu perfil, la gente cerca y los grupos, m
 - La conexión siempre va cifrada (HTTPS).
 - Las contraseñas se guardan cifradas.
 - La base de datos no es accesible desde internet: solo la ve la app.
+- Al servidor solo se entra con clave SSH, con bloqueo de intentos fallidos y actualizaciones de seguridad automáticas.
 - A las fotos y los videos les borramos los metadatos y la ubicación.
 - Las notificaciones no dicen quién te escribió ni qué.
 
-Ningún sistema es 100 % seguro, y menos uno en beta. Si pasa algo que afecte tus datos, te vamos a avisar.
+Lo que todavía no hacemos: cifrar los datos guardados en el servidor ni los mensajes de punta a punta, y guardar los backups fuera del servidor (los vamos a copiar afuera, cifrados). Ningún sistema es 100 % seguro, y menos uno en beta. Si pasa algo que afecte tus datos, te vamos a avisar.
 
 ## 8. Tus derechos
 

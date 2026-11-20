@@ -22,12 +22,13 @@ Un arreglo de redacción no necesita cambiar la versión.
 
 Esta es una versión beta, escrita con lo que sabemos hoy. Pendiente:
 
-- [ ] **Responsable de la base de datos:** quién figura (nombre y DNI/CUIT, o una organización) y un domicilio. La ley lo exige.
-- [ ] **Mail de contacto** para pedidos sobre datos personales. Hoy el contacto es GitHub Discusiones, que es público.
-- [ ] **Servidor:** confirmar el proveedor y el país del VPS. Hoy dice "VPS en Europa".
+- [ ] **Responsable de la base de datos:** quién figura (nombre y DNI/CUIT, o una organización) y un domicilio. La ley lo exige. Lo define Gabriel; no completar con nada provisorio.
+- [ ] **Mail de contacto** para pedidos sobre datos personales. Hoy el contacto es GitHub Discusiones, que es público. Lo define Gabriel.
+- [x] **Servidor:** VPS de Contabo en Europa (confirmado por Gabriel). El disco no está cifrado y así lo dice la política.
+- [ ] **País exacto del servidor:** probablemente Alemania; Gabriel lo confirma en el panel de Contabo.
 - [ ] **Inscribir la base de datos en la AAIP:** es obligatorio y gratuito. Después, sumar el número de registro a la política.
 - [ ] **Mensajes borrados en grupos:** hoy el texto queda en la base (`status = 'deleted'`). Decidir si se borra de verdad o si se guarda un tiempo para moderar, y actualizar el punto 6 de la política.
-- [ ] **Backups:** hoy quedan en el mismo servidor. Copiarlos afuera y cifrarlos, y contarlo en la política.
+- [ ] **Backups:** hoy quedan en el mismo servidor (14 días). Gabriel arma una copia cifrada afuera; cuando esté, actualizar el punto 7 de la política.
 - [ ] **Proveedor de mails:** nombrarlo cuando esté definido.
 - [ ] **Jurisdicción:** definir si se fija una ciudad.
 - [ ] **Revisión legal:** que lo lea alguien que sepa de derecho, por ejemplo una organización LGBTIQ+ con área legal.

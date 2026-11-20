@@ -61,8 +61,22 @@
     {
       "idx": 8,
       "version": "7",
-      "when": 1795194452550,
-      "tag": "0008_terms_acceptance",
+      "when": 1795199712626,
+      "tag": "0008_group_invites",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795201283747,
+      "tag": "0009_toques_reacciones",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795203988751,
+      "tag": "0010_terms_acceptance",
       "breakpoints": true
     }
   ]

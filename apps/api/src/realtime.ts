@@ -3,7 +3,7 @@ import { and, eq, inArray, lte } from "drizzle-orm";
 import { Server } from "socket.io";
 import { auth } from "./auth.js";
 import { db, schema } from "./db/index.js";
-import { authorsFor, blockedWith } from "./lib.js";
+import { authorsFor, blockedWith, reactionsFor } from "./lib.js";
 import { notifyGroupMessage } from "./groupNotify.js";
 
 const { groupMember, groupMessage } = schema;
@@ -106,6 +106,7 @@ export async function serializeGroupMessages(rows: (typeof groupMessage.$inferSe
     : [];
   const quotedById = new Map(quoted.map((q) => [q.id, q]));
   const authors = await authorsFor([...rows.map((r) => r.userId), ...quoted.map((q) => q.userId)]);
+  const reactions = await reactionsFor(rows.filter((r) => r.status === "published").map((r) => r.id));
   // En los grupos se muestra solo el nombre y la foto, sin la edad
   const author = (id: string) => {
     const a = authors.get(id);
@@ -120,6 +121,7 @@ export async function serializeGroupMessages(rows: (typeof groupMessage.$inferSe
       status: r.status,
       scheduledAt: r.scheduledAt.toISOString(),
       author: author(r.userId),
+      reactions: reactions.get(r.id) ?? [],
       replyTo: q
         ? { id: q.id, authorName: author(q.userId).name, body: q.status === "published" ? q.body.slice(0, 160) : null }
         : null,

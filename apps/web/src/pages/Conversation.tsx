@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { api, getSocket, upload, type Author, type Dm } from "../api";
+import { api, getSocket, upload, type Author, type Dm, type ReactionEvent } from "../api";
+import { myReaction, ReactionBar, ReactionPicker } from "../components/Reactions";
 import { useMe } from "../App";
 import { Avatar } from "../components/Avatar";
 import { BackIcon, ImageIcon, LockIcon, SendIcon, TimerIcon } from "../components/Icons";
@@ -61,6 +62,11 @@ export function Conversation() {
       clearTimeout(typingTimer.current);
       typingTimer.current = setTimeout(() => setTyping(false), 3500);
     };
+    const onReaction = (p: ReactionEvent) => {
+      if (p.scope !== "dm" || p.conversationId !== id) return;
+      setMessages((list) => list.map((m) => (m.id === p.messageId ? { ...m, reactions: p.reactions } : m)));
+    };
+    s.on("reaction", onReaction);
     s.on("dm:message", onMsg);
     s.on("dm:read", onRead);
     s.on("dm:deleted", onDeleted);
@@ -68,6 +74,7 @@ export function Conversation() {
     s.on("dm:typing", onTyping);
     return () => {
       alive = false;
+      s.off("reaction", onReaction);
       s.off("dm:message", onMsg);
       s.off("dm:read", onRead);
       s.off("dm:deleted", onDeleted);
@@ -76,6 +83,17 @@ export function Conversation() {
       clearTimeout(typingTimer.current);
     };
   }, [id, myId, nav]);
+
+  /** Poner, cambiar o sacar mi reacción a un mensaje (si toco la que ya tenía, se saca). */
+  async function react(m: Dm, kind: string) {
+    setMsgMenu(null);
+    try {
+      const { reactions } = await api<{ reactions: Dm["reactions"] }>(`/reactions/dm/${m.id}`, { method: "PUT", json: { kind } });
+      setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, reactions } : x)));
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
 
   useLayoutEffect(() => {
     const el = listRef.current;
@@ -185,18 +203,20 @@ export function Conversation() {
                 </>
               )}
               <time>{new Date(m.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</time>
-              {mine && m.kind !== "album" && (
+              <ReactionBar reactions={m.reactions ?? []} myId={myId} mine={mine} onToggle={(k) => react(m, k)} />
+              {m.kind !== "album" && (
                 <>
                   <button
                     className="bubble__more"
-                    aria-label="Opciones del mensaje"
+                    aria-label="Reaccionar u opciones del mensaje"
                     onClick={(e) => { e.stopPropagation(); setMsgMenu(msgMenu === m.id ? null : m.id); }}
                   >
                     ⋯
                   </button>
                   {msgMenu === m.id && (
-                    <div className="menu menu--bubble" role="menu" onClick={(e) => e.stopPropagation()}>
-                      <button role="menuitem" className="danger" onClick={() => unsend(m)}>Desenviar (se borra para los dos)</button>
+                    <div className={`menu menu--bubble ${mine ? "" : "menu--bubble-theirs"}`} role="menu" onClick={(e) => e.stopPropagation()}>
+                      <ReactionPicker current={myReaction(m.reactions ?? [], myId)} onPick={(k) => react(m, k)} />
+                      {mine && <button role="menuitem" className="danger" onClick={() => unsend(m)}>Desenviar (se borra para los dos)</button>}
                     </div>
                   )}
                 </>

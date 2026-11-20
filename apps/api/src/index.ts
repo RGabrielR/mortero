@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { auth } from "./auth.js";
-import { db, runMigrations, schema } from "./db/index.js";
+import { closeDb, db, runMigrations, schema } from "./db/index.js";
 import { env } from "./env.js";
 import { APP_NAME } from "./brand.js";
 import type { AppEnv } from "./lib.js";
@@ -18,6 +18,7 @@ import { socialRoutes } from "./routes/social.js";
 import { nearbyRoutes } from "./routes/nearby.js";
 import { premiumRoutes } from "./routes/premium.js";
 import { adminRoutes } from "./routes/admin.js";
+import { toqueRoutes } from "./routes/toques.js";
 
 await runMigrations();
 
@@ -56,6 +57,7 @@ app.route("/api", socialRoutes);
 app.route("/api", nearbyRoutes);
 app.route("/api", premiumRoutes);
 app.route("/api", adminRoutes);
+app.route("/api", toqueRoutes);
 app.all("/api/*", (c) => c.json({ error: "No existe" }, 404));
 
 // En producción el API también sirve la web compilada (un solo proceso, un solo puerto)
@@ -83,3 +85,24 @@ const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
   console.log(`${APP_NAME} API escuchando en http://localhost:${info.port}`);
 });
 attachRealtime(server as HttpServer);
+
+// Apagado ordenado: dejar de recibir pedidos y cerrar la base antes de salir.
+// - Producción: docker stop manda SIGTERM, y así se cierran bien las conexiones a Postgres.
+// - Desarrollo: Ctrl+C (SIGINT), o el pedido "shutdown" que manda scripts/dev.mjs antes de reiniciar.
+//   Sin esto, la base local (PGlite) a veces queda dañada y no vuelve a abrir. En Windows las señales
+//   matan el proceso sin dejarlo limpiar, por eso el reinicio se pide por IPC.
+let closing = false;
+async function shutdown(signal: string) {
+  if (closing) return;
+  closing = true;
+  console.log(`${signal}: cerrando…`);
+  const force = setTimeout(() => process.exit(1), 5_000);
+  force.unref();
+  (server as HttpServer).close();
+  await closeDb().catch((e) => console.error("closeDb", e));
+  process.exit(0);
+}
+for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => void shutdown(signal));
+process.on("message", (msg) => {
+  if (msg === "shutdown") void shutdown("reinicio");
+});

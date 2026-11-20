@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
+COPY packages/brand/package.json packages/brand/
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build --workspace web
@@ -18,6 +19,8 @@ WORKDIR /app
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps/api ./apps/api
+# La marca (nombre, colores de los mails): el API la importa desde acá
+COPY --from=build /app/packages ./packages
 COPY --from=build /app/apps/web/dist ./apps/web/dist
 # Corre sin privilegios de root
 RUN mkdir -p /data && chown -R node:node /data

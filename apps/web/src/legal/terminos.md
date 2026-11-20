@@ -6,9 +6,9 @@ Bienvenide a qule.ar. Al crear tu cuenta aceptás estos términos y la [Polític
 
 ## 1. Qué es qule.ar
 
-qule.ar es una app comunitaria, gratuita y de código abierto para conocer gente y charlar en grupos. La hace un grupo de personas voluntarias, no una empresa, y el código está publicado en [GitHub](https://github.com/RGabrielR/mortero) bajo la licencia AGPL-3.0.
+qule.ar es una app comunitaria, gratuita y de código abierto para conocer gente y charlar en grupos. La hace un grupo de personas voluntarias, no una empresa, y el código está publicado en [GitHub](https://github.com/RGabrielR/qule.ar) bajo la licencia AGPL-3.0.
 
-**Contacto:** por ahora, en las [Discusiones del proyecto](https://github.com/RGabrielR/mortero/discussions). Pronto vamos a sumar un mail.
+**Contacto:** por ahora, en las [Discusiones del proyecto](https://github.com/RGabrielR/qule.ar/discussions). Pronto vamos a sumar un mail.
 
 ## 2. qule.ar está en beta
 
@@ -41,7 +41,7 @@ qule.ar es un espacio para la comunidad LGBTIQ+ y sus aliades. Al usarla te comp
 - No publicar contenido sexual de menores, contenido sexual sin consentimiento ni violencia. Esto lo denunciamos a las autoridades.
 - No intentar romper la app, entrar a cuentas ajenas ni sacar datos de forma automática.
 
-Las reglas completas de convivencia están en el [Código de conducta](https://github.com/RGabrielR/mortero/blob/main/CODE_OF_CONDUCT.md).
+Las reglas completas de convivencia están en el [Código de conducta](https://github.com/RGabrielR/qule.ar/blob/main/CODE_OF_CONDUCT.md).
 
 ## 5. Lo que publicás
 
