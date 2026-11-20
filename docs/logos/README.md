@@ -17,3 +17,13 @@ Un mate visto de frente, con la bombilla. Si lo mirás de nuevo, el cuenco es un
 - **Tiene el chiste de qule.ar sin ser explícito.** El guiño está para quien lo quiera ver, y se puede abrir en el colectivo sin que nadie se dé vuelta.
 - **Sigue la historia del proyecto.** El ícono de mortero es un cuenco con su palito. El mate es la misma forma, así que el cambio de nombre no rompe con lo que ya había.
 - **Se lee en chiquito.** Es una sola silueta con dos colores de la paleta (brasa y su versión clara) y la bombilla en blanco, así que funciona como ícono de app, favicon y avatar.
+
+## Hacia dónde vamos: el mate culo
+
+La idea del mate de #12 gustó mucho, y estas dos imágenes marcan la dirección.
+
+| ![](qule-13-mate-culo-plano.png) | ![](qule-14-mate-culo-peludo.jpg) |
+|---|---|
+| **13 · Plano.** Silueta con degradé de amarillo a magenta, borde y bombilla color crema, la raya marcada. Este es el estilo hacia el que hay que ir. | **14 · Peludo.** Es la base principal de la idea, por el carácter, el humor y lo táctil. Pero tiene demasiado detalle para ícono: en chiquito se pierde. Sirve de referencia, no para usarlo así. |
+
+El trabajo que sigue es llevar la actitud del 14 a la simpleza del 13: una forma que se lea en 24 px, con dos o tres colores.
