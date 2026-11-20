@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { db, schema } from "../db/index.js";
-import { distanceKm, distanceLabel, snapToCell } from "../geo.js";
+import { distanceLabel, snapToCell, visibleKm } from "../geo.js";
 import { ageFrom, blockedWith, thumbUrl, requireProfile, requireUser, type AppEnv } from "../lib.js";
 import { isOnline } from "../realtime.js";
 
@@ -19,12 +19,27 @@ nearbyRoutes.use("/nearby", requireUser, requireProfile);
 nearbyRoutes.use("/me/location", requireUser, requireProfile);
 nearbyRoutes.use("/me/privacy", requireUser, requireProfile);
 
+/**
+ * Cuántas veces por hora se puede cambiar de zona. Alguien que se mueve de verdad cambia pocas veces; quien
+ * intenta triangular a otra persona necesita moverse muchas. Pasado el límite se ignora en silencio.
+ */
+const MAX_CELL_CHANGES_PER_HOUR = 20;
+const cellChanges = new Map<string, number[]>();
+
 /** Guarda la ubicación redondeada a la celda. La posición exacta no se guarda ni se loguea. */
 nearbyRoutes.put("/me/location", async (c) => {
   const u = c.get("user");
   const r = z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).safeParse(await c.req.json());
   if (!r.success) throw new HTTPException(400, { message: "Ubicación inválida" });
   const cell = snapToCell(r.data.lat, r.data.lng);
+  const me = c.get("profile")!;
+  if (me.cellLat !== cell.lat || me.cellLng !== cell.lng) {
+    const hourAgo = Date.now() - 3_600_000;
+    const recent = (cellChanges.get(u.id) ?? []).filter((t) => t > hourAgo);
+    if (recent.length >= MAX_CELL_CHANGES_PER_HOUR) return c.json({ ok: true });
+    recent.push(Date.now());
+    cellChanges.set(u.id, recent);
+  }
   await db
     .update(profile)
     .set({ cellLat: cell.lat, cellLng: cell.lng, locationUpdatedAt: new Date() })
@@ -98,9 +113,7 @@ nearbyRoutes.get("/nearby", async (c) => {
   const candidates = rows
     .filter((p) => !blocked.has(p.userId) && (!f.favorites || favs.has(p.userId)))
     .map((p) => {
-      const km = meHasLoc && p.cellLat != null && p.cellLng != null
-        ? distanceKm(me.cellLat!, me.cellLng!, p.cellLat, p.cellLng)
-        : null;
+      const km = visibleKm(me, p);
       const on = isOnline(p.userId);
       return { p, km, age: ageFrom(p.birthdate), online: on, recent: on || now - p.lastSeenAt.getTime() < RECENT_MS };
     })
@@ -149,8 +162,8 @@ nearbyRoutes.get("/nearby", async (c) => {
       online,
       recent,
       favorite: favs.has(p.userId),
-      // Si cualquiera de los dos eligió esconder la distancia, no se muestra
-      distance: km != null && p.showDistance && me.showDistance ? distanceLabel(km) : null,
+      // Si cualquiera de los dos eligió esconder la distancia, km es null (ver visibleKm)
+      distance: km != null ? distanceLabel(km) : null,
     })),
   });
 });

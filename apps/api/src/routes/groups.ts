@@ -6,7 +6,7 @@ import { nextSlot } from "../antispam.js";
 import { db, schema } from "../db/index.js";
 import { DEFAULT_SPAM_RULES } from "../db/schema.js";
 import { ageFrom, authorsFor, blockedWith, newId, requireProfile, requireUser, thumbUrl, type AppEnv } from "../lib.js";
-import { distanceKm, distanceLabel } from "../geo.js";
+import { distanceLabel, visibleKm } from "../geo.js";
 import { emitToGroup, emitToUser, isOnline, serializeGroupMessages, syncGroupRoom } from "../realtime.js";
 import { pushTo } from "../push.js";
 import { notifyGroupMessage } from "../groupNotify.js";
@@ -507,7 +507,8 @@ groupRoutes.get("/groups/:id/invite-candidates", async (c) => {
   let list = rows
     .filter((p) => !blocked.has(p.userId) && (!chatted || chatted.has(p.userId)) && (!favorites || favorites.has(p.userId)))
     .map((p) => {
-      const km = meHasLoc && p.cellLat != null && p.cellLng != null ? distanceKm(me.cellLat!, me.cellLng!, p.cellLat, p.cellLng) : null;
+      // null si alguien escondió la distancia: tampoco se usa para ordenar ni para el filtro de km
+      const km = visibleKm(me, p);
       return { p, km, age: ageFrom(p.birthdate), online: !p.incognito && isOnline(p.userId) };
     })
     .filter(({ km, age, online }) =>
@@ -543,7 +544,7 @@ groupRoutes.get("/groups/:id/invite-candidates", async (c) => {
       age,
       photo: thumbUrl(first.get(p.userId)),
       online,
-      distance: km != null && p.showDistance && me.showDistance ? distanceLabel(km) : null,
+      distance: km != null ? distanceLabel(km) : null,
       state: states.get(p.userId) ?? null,
     })),
   });

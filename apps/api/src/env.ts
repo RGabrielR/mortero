@@ -19,6 +19,9 @@ export const env = {
   MAIL_FROM: process.env.MAIL_FROM ?? "qule.ar <hola@qule.local>",
   // Emails con acceso al panel de moderación, separados por coma
   ADMIN_EMAILS: (process.env.ADMIN_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean),
+  // IDs de cuenta con acceso a moderación. Sirve para quien entra con mail y contraseña: hoy esos mails no se
+  // verifican, así que ADMIN_EMAILS solo cuenta para cuentas con el mail verificado (por ejemplo, las de Google).
+  ADMIN_USER_IDS: (process.env.ADMIN_USER_IDS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
   // Carpeta con la web compilada (en producción el API la sirve)
   WEB_DIST: process.env.WEB_DIST ?? path.join(root, "apps/web/dist"),
   // Encabezado del que sale la IP real de cada persona (límite de intentos y sesiones). Tiene que ser uno que el

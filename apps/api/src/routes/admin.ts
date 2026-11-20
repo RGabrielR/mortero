@@ -14,7 +14,12 @@ import { deleteImage } from "../storage.js";
 
 const { report, profile, session, groupMessage, directMessage, pushSubscription, user, group } = schema;
 
-export const isAdminEmail = (email: string) => env.ADMIN_EMAILS.includes(email.toLowerCase());
+/**
+ * ¿Puede entrar al panel de moderación? Por el ID de la cuenta (ADMIN_USER_IDS), o por el mail (ADMIN_EMAILS)
+ * solo si está verificado: si no, cualquiera podría registrarse con un mail de la lista que todavía no tenga cuenta.
+ */
+export const isAdmin = (u: { id: string; email: string; emailVerified: boolean }) =>
+  env.ADMIN_USER_IDS.includes(u.id) || (u.emailVerified && env.ADMIN_EMAILS.includes(u.email.toLowerCase()));
 
 export const adminRoutes = new Hono<AppEnv>();
 
@@ -63,7 +68,7 @@ adminRoutes.delete("/push/subscribe", requireUser, async (c) => {
 // ---------- Moderación ----------
 
 const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
-  if (!isAdminEmail(c.get("user").email)) throw new HTTPException(403, { message: "Solo moderación" });
+  if (!isAdmin(c.get("user"))) throw new HTTPException(403, { message: "Solo moderación" });
   await next();
 });
 adminRoutes.use("/admin/*", requireUser, requireAdmin);

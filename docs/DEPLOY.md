@@ -37,6 +37,9 @@ DATABASE_URL=postgres://mortero:CLAVE_DB@mortero-db:5432/mortero
 VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
 ADMIN_EMAILS=tu-email@ejemplo.com
+# Solo cuenta si el mail está verificado (cuentas de Google). Si entrás con mail y contraseña, usá tu ID de cuenta
+# (se ve en https://DOMINIO/api/me con la sesión iniciada):
+ADMIN_USER_IDS=
 # Opcional, para mandar mails (bienvenida, recuperar contraseña):
 SMTP_URL=smtps://resend:API_KEY@smtp.resend.com:465
 MAIL_FROM=qule.ar <hola@DOMINIO>

@@ -11,8 +11,9 @@ import { syncGroupRoom } from "../realtime.js";
 import { deleteImage, MAX_UPLOAD_BYTES, MAX_VIDEO_BYTES, readImage, saveImage, saveVideo, videoEnabled, videoFile } from "../storage.js";
 import { googleEnabled } from "../auth.js";
 import { hasAlbumAccess } from "./premium.js";
-import { isAdminEmail } from "./admin.js";
+import { isAdmin } from "./admin.js";
 import { APP_NAME } from "../brand.js";
+import { expiringIsOver } from "../expiring.js";
 
 const { profile, photo, user, group, groupMember, directMessage, conversation } = schema;
 const MAX_PHOTOS = 6;
@@ -58,7 +59,8 @@ meRoutes.get("/files/:key", requireUser, async (c) => {
     const [conv] = await db.select().from(conversation).where(eq(conversation.id, dm.conversationId));
     const inConv = conv && (conv.userA === viewer || conv.userB === viewer);
     if (!inConv) return c.notFound();
-    if (dm.expiring && (dm.senderId === viewer || !dm.openedAt)) return c.notFound();
+    // Ya vista: después de unos segundos no se sirve más, aunque el archivo todavía no se haya borrado
+    if (dm.expiring && (dm.senderId === viewer || !dm.openedAt || expiringIsOver(dm.openedAt))) return c.notFound();
   }
   const buf = await readImage(key, c.req.query("s") === "thumb");
   if (!buf) return c.notFound();
@@ -99,7 +101,7 @@ meRoutes.get("/me", requireUser, async (c) => {
   const p = c.get("profile");
   const photos = await db.select().from(photo).where(eq(photo.userId, u.id)).orderBy(asc(photo.position));
   return c.json({
-    user: { id: u.id, email: u.email, name: u.name, isAdmin: isAdminEmail(u.email) },
+    user: { id: u.id, email: u.email, name: u.name, isAdmin: isAdmin(u) },
     profile: p
       ? (() => {
           const { cellLat, cellLng, ...rest } = p;

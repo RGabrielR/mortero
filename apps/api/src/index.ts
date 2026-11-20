@@ -20,8 +20,13 @@ import { premiumRoutes } from "./routes/premium.js";
 import { adminRoutes } from "./routes/admin.js";
 import { toqueRoutes } from "./routes/toques.js";
 import { securityHeaders } from "./security.js";
+import { sweepExpiredPhotos } from "./expiring.js";
 
 await runMigrations();
+
+// Fotos temporales ya vistas: se borran al arrancar (por si el API se reinició justo después de abrir una) y cada minuto
+await sweepExpiredPhotos().catch((e) => console.error("sweepExpiredPhotos", e));
+setInterval(() => sweepExpiredPhotos().catch((e) => console.error("sweepExpiredPhotos", e)), 60_000).unref();
 
 // El chat general existe siempre
 const [general] = await db.select().from(schema.group).where(eq(schema.group.isGeneral, true));

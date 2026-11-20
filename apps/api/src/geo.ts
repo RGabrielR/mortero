@@ -31,6 +31,19 @@ export function distanceKm(aLat: number, aLng: number, bLat: number, bLng: numbe
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
+type Located = { cellLat: number | null; cellLng: number | null; showDistance: boolean };
+
+/**
+ * Distancia entre dos personas, solo si las dos tienen ubicación y ninguna la escondió. Si alguna la escondió,
+ * es null para todo: no se muestra, pero tampoco se usa para ordenar ni para filtrar. Si se usara para ordenar
+ * ("más cerca primero"), cualquiera podría ubicar igual a quien la escondió moviendo su propia ubicación.
+ */
+export function visibleKm(me: Located, other: Located): number | null {
+  if (!me.showDistance || !other.showDistance) return null;
+  if (me.cellLat == null || me.cellLng == null || other.cellLat == null || other.cellLng == null) return null;
+  return distanceKm(me.cellLat, me.cellLng, other.cellLat, other.cellLng);
+}
+
 /** Tramo de distancia que se muestra. Nunca el número exacto. */
 export function distanceLabel(km: number): string {
   if (km < 1) return "a menos de 1 km";

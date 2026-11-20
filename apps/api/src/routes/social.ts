@@ -7,12 +7,13 @@ import {
   ageFrom, authorsFor, imageUrl, isBlocked, mediaOut, newId, reactionsFor, type ReactionSummary, requireProfile, requireUser, type AppEnv,
 } from "../lib.js";
 import { emitToUser, isOnline } from "../realtime.js";
-import { distanceKm, distanceLabel } from "../geo.js";
+import { distanceLabel, visibleKm } from "../geo.js";
 import { deleteImage, MAX_UPLOAD_BYTES, saveImage } from "../storage.js";
 import { albumAccessUntil, recordView } from "./premium.js";
 import { myRecentToque } from "./toques.js";
 import { pushTo } from "../push.js";
 import { APP_NAME } from "../brand.js";
+import { EXPIRING_GRACE_MS, EXPIRING_SECONDS } from "../expiring.js";
 
 const { profile, photo, block, report, conversation, directMessage } = schema;
 
@@ -37,9 +38,7 @@ socialRoutes.get("/users/:id", async (c) => {
   // Lista explícita de campos públicos: nunca la fecha de nacimiento ni la celda de ubicación
   const mine = c.get("profile")!;
   await recordView(me.id, mine.incognito, id);
-  const canShowDistance =
-    id !== me.id && p.showDistance && mine.showDistance &&
-    p.cellLat != null && p.cellLng != null && mine.cellLat != null && mine.cellLng != null;
+  const km = id === me.id ? null : visibleKm(mine, p);
   // En incógnito no se muestra si estás en línea
   const on = !p.incognito && isOnline(id);
   const [fav] = await db.select().from(schema.favorite)
@@ -79,7 +78,7 @@ socialRoutes.get("/users/:id", async (c) => {
     // El último toque que le mandé, si fue hace menos de 12 horas
     myToque: id === me.id ? null : await myRecentToque(me.id, id),
     sharedUntil: myGrant ? myGrant.toISOString() : null,
-    distance: canShowDistance ? distanceLabel(distanceKm(mine.cellLat!, mine.cellLng!, p.cellLat!, p.cellLng!)) : null,
+    distance: km != null ? distanceLabel(km) : null,
   });
 });
 
@@ -112,8 +111,6 @@ function serializeDm(m: typeof directMessage.$inferSelect, reactions: ReactionSu
   };
 }
 
-/** Segundos que se puede ver una foto temporal antes de que se borre. */
-const EXPIRING_SECONDS = 10;
 
 socialRoutes.get("/conversations", async (c) => {
   const me = c.get("user");
@@ -262,7 +259,7 @@ socialRoutes.post("/conversations/:id/messages/:mid/open", async (c) => {
   setTimeout(async () => {
     await deleteImage(key);
     await db.update(directMessage).set({ photoKey: null }).where(eq(directMessage.id, row.id)).catch(() => {});
-  }, (EXPIRING_SECONDS + 5) * 1000);
+  }, EXPIRING_GRACE_MS);
   emitToUser(row.senderId, "dm:opened", { conversationId: conv.id, id: row.id });
   return c.json({ photo: imageUrl(key), seconds: EXPIRING_SECONDS });
 });
@@ -342,6 +339,23 @@ socialRoutes.post("/reports", async (c) => {
     .safeParse(await c.req.json());
   if (!r.success) throw new HTTPException(400, { message: "Elegí un motivo" });
   const { userId, ...rest } = r.data;
+  if (rest.messageId) {
+    // El mensaje adjunto tiene que ser de la persona reportada y de una charla o grupo donde está quien reporta
+    let ok = false;
+    if (rest.messageKind === "dm") {
+      const [m] = await db.select().from(directMessage).where(eq(directMessage.id, rest.messageId));
+      const [conv] = m ? await db.select().from(conversation).where(eq(conversation.id, m.conversationId)) : [];
+      ok = Boolean(m && conv && m.senderId === userId && (conv.userA === me.id || conv.userB === me.id));
+    } else if (rest.messageKind === "group") {
+      const [m] = await db.select().from(schema.groupMessage).where(eq(schema.groupMessage.id, rest.messageId));
+      const [mem] = m
+        ? await db.select().from(schema.groupMember)
+            .where(and(eq(schema.groupMember.groupId, m.groupId), eq(schema.groupMember.userId, me.id)))
+        : [];
+      ok = Boolean(m && mem && m.userId === userId);
+    }
+    if (!ok) throw new HTTPException(400, { message: "Ese mensaje no corresponde a este reporte" });
+  }
   await db.insert(report).values({ id: newId(), reporterId: me.id, targetUserId: userId, ...rest });
   return c.json({ ok: true });
 });
