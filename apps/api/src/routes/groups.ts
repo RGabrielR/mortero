@@ -1,12 +1,13 @@
-import { and, asc, desc, eq, gt, ilike, inArray, lt, notInArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, inArray, isNull, lt, notInArray, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { nextSlot } from "../antispam.js";
 import { db, schema } from "../db/index.js";
 import { DEFAULT_SPAM_RULES } from "../db/schema.js";
-import { authorsFor, blockedWith, newId, requireProfile, requireUser, type AppEnv } from "../lib.js";
-import { emitToGroup, emitToUser, serializeGroupMessages, syncGroupRoom } from "../realtime.js";
+import { ageFrom, authorsFor, blockedWith, newId, requireProfile, requireUser, thumbUrl, type AppEnv } from "../lib.js";
+import { distanceKm, distanceLabel } from "../geo.js";
+import { emitToGroup, emitToUser, isOnline, serializeGroupMessages, syncGroupRoom } from "../realtime.js";
 import { pushTo } from "../push.js";
 import { notifyGroupMessage } from "../groupNotify.js";
 import { APP_NAME } from "../brand.js";
@@ -455,43 +456,92 @@ groupRoutes.post("/groups/:id/invites", async (c) => {
   return c.json({ id });
 });
 
+const candidatesQuery = z.object({
+  q: z.string().trim().max(40).optional(),
+  // Hasta cuántos km (sin valor: sin límite)
+  maxKm: z.coerce.number().positive().max(20000).optional(),
+  ageMin: z.coerce.number().int().min(18).max(99).optional(),
+  ageMax: z.coerce.number().int().min(18).max(99).optional(),
+  online: z.enum(["1"]).optional(),
+  withPhoto: z.enum(["1"]).optional(),
+  // Solo gente que conocés: con la que charlaste o tus favoritos
+  known: z.enum(["1"]).optional(),
+  // Por defecto no se muestra a quien ya está en el grupo
+  showMembers: z.enum(["1"]).optional(),
+  offset: z.coerce.number().int().min(0).max(5000).default(0),
+});
+const CANDIDATES_PAGE = 60;
+
 /**
- * A quién invitar: sin búsqueda, la gente con la que charlaste y tus favoritos; con búsqueda, por nombre.
- * Cada persona viene con su estado en el grupo (ya está, invitada, pidió entrar…).
+ * Gente para invitar a un grupo (dueño y moderadores): la lista larga, como la grilla de Gente,
+ * de la más cercana a la más lejana. Se puede buscar por nombre y filtrar por distancia, edad, en línea,
+ * con foto y "gente que conocés". Quien está en incógnito solo aparece si la buscás por nombre.
  */
 groupRoutes.get("/groups/:id/invite-candidates", async (c) => {
   const u = c.get("user");
+  const me = c.get("profile")!;
   const { group: g } = await requireMod(c.req.param("id"), u.id);
-  const q = (c.req.query("q") ?? "").trim().slice(0, 40);
-  let ids: string[];
-  if (q) {
-    ids = (await db
-      .select({ id: schema.profile.userId })
-      .from(schema.profile)
-      .where(and(ilike(schema.profile.displayName, `%${q.replace(/[%_\\]/g, "\\$&")}%`), sql`${schema.profile.userId} <> ${u.id}`))
-      .limit(30)).map((r) => r.id);
-  } else {
-    const convs = await db
-      .select({ a: schema.conversation.userA, b: schema.conversation.userB })
-      .from(schema.conversation)
-      .where(or(eq(schema.conversation.userA, u.id), eq(schema.conversation.userB, u.id)))
-      .orderBy(desc(schema.conversation.lastMessageAt))
-      .limit(30);
-    const favs = await db
-      .select({ id: schema.favorite.favoriteId })
-      .from(schema.favorite)
-      .where(eq(schema.favorite.userId, u.id))
-      .limit(30);
-    ids = [...new Set([...convs.map((r) => (r.a === u.id ? r.b : r.a)), ...favs.map((r) => r.id)])];
-  }
+  const f = candidatesQuery.parse(c.req.query());
+  const q = f.q ?? "";
+
+  const conds = [sql`${schema.profile.userId} <> ${u.id}`, isNull(schema.profile.suspendedAt)];
+  if (q) conds.push(ilike(schema.profile.displayName, `%${q.replace(/[%_\\]/g, "\\$&")}%`));
+  else conds.push(eq(schema.profile.incognito, false));
+  const rows = await db.select().from(schema.profile).where(and(...conds)).orderBy(desc(schema.profile.lastSeenAt)).limit(3000);
+
   const blocked = await blockedWith(u.id);
-  ids = ids.filter((id) => !blocked.has(id));
-  const authors = await authorsFor(ids);
-  const states = await peopleStateIn(g.id, ids);
-  return c.json(ids.flatMap((id) => {
-    const a = authors.get(id);
-    return a ? [{ ...a, state: states.get(id) ?? null }] : [];
-  }));
+  let known: Set<string> | null = null;
+  if (f.known) {
+    const convs = await db.select({ a: schema.conversation.userA, b: schema.conversation.userB }).from(schema.conversation)
+      .where(or(eq(schema.conversation.userA, u.id), eq(schema.conversation.userB, u.id)));
+    const favs = await db.select({ id: schema.favorite.favoriteId }).from(schema.favorite).where(eq(schema.favorite.userId, u.id));
+    known = new Set([...convs.map((r) => (r.a === u.id ? r.b : r.a)), ...favs.map((r) => r.id)]);
+  }
+
+  const meHasLoc = me.cellLat != null && me.cellLng != null;
+  let list = rows
+    .filter((p) => !blocked.has(p.userId) && (!known || known.has(p.userId)))
+    .map((p) => {
+      const km = meHasLoc && p.cellLat != null && p.cellLng != null ? distanceKm(me.cellLat!, me.cellLng!, p.cellLat, p.cellLng) : null;
+      return { p, km, age: ageFrom(p.birthdate), online: !p.incognito && isOnline(p.userId) };
+    })
+    .filter(({ km, age, online }) =>
+      (f.maxKm == null || (km != null && km <= f.maxKm)) &&
+      (f.ageMin == null || age >= f.ageMin) &&
+      (f.ageMax == null || age <= f.ageMax) &&
+      (!f.online || online));
+
+  // Estado en el grupo (miembro, invitado, pidió entrar…): por defecto se esconde a quien ya está
+  const states = await peopleStateIn(g.id, list.map((x) => x.p.userId));
+  if (!f.showMembers) list = list.filter((x) => states.get(x.p.userId) !== "member");
+
+  // Foto principal pública
+  const ids = list.map((x) => x.p.userId);
+  const photos = ids.length
+    ? await db.select().from(schema.photo).where(and(inArray(schema.photo.userId, ids), eq(schema.photo.isPrivate, false))).orderBy(asc(schema.photo.position))
+    : [];
+  const first = new Map<string, string>();
+  for (const ph of photos) if (!first.has(ph.userId)) first.set(ph.userId, ph.key);
+  if (f.withPhoto) list = list.filter((x) => first.has(x.p.userId));
+
+  const far = Number.POSITIVE_INFINITY;
+  list.sort((a, b) => (a.km ?? far) - (b.km ?? far) || Number(b.online) - Number(a.online) || b.p.lastSeenAt.getTime() - a.p.lastSeenAt.getTime());
+  const page = list.slice(f.offset, f.offset + CANDIDATES_PAGE);
+
+  return c.json({
+    hasLocation: meHasLoc,
+    total: list.length,
+    hasMore: list.length > f.offset + CANDIDATES_PAGE,
+    people: page.map(({ p, km, age, online }) => ({
+      id: p.userId,
+      name: p.displayName,
+      age,
+      photo: thumbUrl(first.get(p.userId)),
+      online,
+      distance: km != null && p.showDistance && me.showDistance ? distanceLabel(km) : null,
+      state: states.get(p.userId) ?? null,
+    })),
+  });
 });
 
 /** Invitaciones sin responder de un grupo (dueño y moderadores). */

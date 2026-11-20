@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { api, type InvitableGroup, type InviteCandidate, type InviteState, type MyInvite } from "../api";
+import { api, type InvitableGroup, type InviteCandidate, type InviteCandidates, type InviteState, type MyInvite } from "../api";
 import { Avatar } from "./Avatar";
 import { GroupIcon } from "./Icons";
 
@@ -28,7 +28,38 @@ function InviteAction({ state, onInvite }: { state: InviteState; onInvite: () =>
   );
 }
 
-/** Desde la info de un grupo: buscar gente e invitarla. */
+/** Hasta qué distancia mostrar gente (km). null = sin límite. */
+const DISTANCES: { km: number | null; label: string }[] = [
+  { km: null, label: "Cualquier distancia" },
+  { km: 1, label: "1 km" },
+  { km: 5, label: "5 km" },
+  { km: 10, label: "10 km" },
+  { km: 25, label: "25 km" },
+  { km: 50, label: "50 km" },
+  { km: 200, label: "200 km" },
+];
+
+type CandidateFilters = { maxKm: number | null; online: boolean; withPhoto: boolean; known: boolean; showMembers: boolean; ageMin: string; ageMax: string };
+const NO_FILTERS: CandidateFilters = { maxKm: null, online: false, withPhoto: false, known: false, showMembers: false, ageMin: "", ageMax: "" };
+
+function candidatesUrl(groupId: string, q: string, f: CandidateFilters, offset: number) {
+  const p = new URLSearchParams();
+  if (q) p.set("q", q);
+  if (f.maxKm != null) p.set("maxKm", String(f.maxKm));
+  if (f.online) p.set("online", "1");
+  if (f.withPhoto) p.set("withPhoto", "1");
+  if (f.known) p.set("known", "1");
+  if (f.showMembers) p.set("showMembers", "1");
+  if (f.ageMin) p.set("ageMin", f.ageMin);
+  if (f.ageMax) p.set("ageMax", f.ageMax);
+  if (offset) p.set("offset", String(offset));
+  return `/groups/${groupId}/invite-candidates?${p}`;
+}
+
+/**
+ * Desde la info de un grupo: la lista larga de gente para invitar, de la más cercana a la más lejana,
+ * con búsqueda por nombre y filtros (distancia, en línea, edad, con foto, gente que conocés).
+ */
 export function InvitePeopleSheet({ groupId, groupName, onClose, onChange }: {
   groupId: string;
   groupName: string;
@@ -36,34 +67,53 @@ export function InvitePeopleSheet({ groupId, groupName, onClose, onChange }: {
   onChange: () => void;
 }) {
   const [q, setQ] = useState("");
-  const [people, setPeople] = useState<InviteCandidate[] | null>(null);
+  const [f, setF] = useState<CandidateFilters>(NO_FILTERS);
+  const [moreFilters, setMoreFilters] = useState(false);
+  const [data, setData] = useState<InviteCandidates | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
 
   const load = useCallback(
-    (query: string) =>
-      api<InviteCandidate[]>(`/groups/${groupId}/invite-candidates?q=${encodeURIComponent(query)}`).then(setPeople).catch(() => setPeople([])),
+    (query: string, filters: CandidateFilters) =>
+      api<InviteCandidates>(candidatesUrl(groupId, query, filters, 0))
+        .then(setData)
+        .catch(() => setData({ people: [], total: 0, hasMore: false, hasLocation: false })),
     [groupId],
   );
 
   useEffect(() => {
-    const t = setTimeout(() => load(q), q ? 250 : 0);
+    const t = setTimeout(() => load(q, f), q || f.ageMin || f.ageMax ? 300 : 0);
     return () => clearTimeout(t);
-  }, [q, load]);
+  }, [q, f, load]);
+
+  async function more() {
+    if (!data) return;
+    setLoadingMore(true);
+    try {
+      const next = await api<InviteCandidates>(candidatesUrl(groupId, q, f, data.people.length));
+      setData({ ...next, people: [...data.people, ...next.people.filter((p) => !data.people.some((x) => x.id === p.id))] });
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function invite(p: InviteCandidate) {
     setError("");
     try {
       const r = await api<{ joined?: boolean }>(`/groups/${groupId}/invites`, { method: "POST", json: { userId: p.id } });
-      setPeople((list) => list?.map((x) => (x.id === p.id ? { ...x, state: r.joined ? "member" : "invited" } : x)) ?? null);
+      setData((d) => d && { ...d, people: d.people.map((x) => (x.id === p.id ? { ...x, state: r.joined ? "member" : "invited" } : x)) });
       onChange();
     } catch (e) {
       setError((e as Error).message);
     }
   }
 
+  const set = <K extends keyof CandidateFilters>(k: K, v: CandidateFilters[K]) => setF((x) => ({ ...x, [k]: v }));
+  const active = JSON.stringify(f) !== JSON.stringify(NO_FILTERS);
+
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet sheet--list" role="dialog" aria-modal aria-labelledby="invite-title" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet sheet--list invite-sheet" role="dialog" aria-modal aria-labelledby="invite-title" onClick={(e) => e.stopPropagation()}>
         <h2 id="invite-title">Invitar a {groupName}</h2>
         <input
           className="input"
@@ -72,24 +122,71 @@ export function InvitePeopleSheet({ groupId, groupName, onClose, onChange }: {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           aria-label="Buscar gente"
-          autoFocus
         />
-        {!q && <p className="muted small">Gente con la que charlaste y tus favoritos. Para otra persona, buscala por su nombre.</p>}
+
+        <div className="invite-filters" role="group" aria-label="Distancia">
+          {DISTANCES.map((d) => (
+            <button key={d.label} type="button" className={`chip ${f.maxKm === d.km ? "chip--on" : ""}`} aria-pressed={f.maxKm === d.km} onClick={() => set("maxKm", d.km)}>
+              {d.label}
+            </button>
+          ))}
+        </div>
+        <div className="invite-filters" role="group" aria-label="Filtros">
+          <button type="button" className={`chip ${f.online ? "chip--on" : ""}`} aria-pressed={f.online} onClick={() => set("online", !f.online)}>En línea</button>
+          <button type="button" className={`chip ${f.known ? "chip--on" : ""}`} aria-pressed={f.known} onClick={() => set("known", !f.known)}>Gente que conocés</button>
+          <button type="button" className={`chip ${f.withPhoto ? "chip--on" : ""}`} aria-pressed={f.withPhoto} onClick={() => set("withPhoto", !f.withPhoto)}>Con foto</button>
+          <button type="button" className={`chip ${moreFilters ? "chip--on" : ""}`} aria-expanded={moreFilters} onClick={() => setMoreFilters(!moreFilters)}>Más filtros</button>
+        </div>
+        {moreFilters && (
+          <div className="invite-more">
+            <label className="field field--inline">
+              <span>Edad</span>
+              <input className="input input--num" inputMode="numeric" placeholder="18" value={f.ageMin} onChange={(e) => set("ageMin", e.target.value.replace(/\D/g, "").slice(0, 2))} aria-label="Edad mínima" />
+              <span className="muted">a</span>
+              <input className="input input--num" inputMode="numeric" placeholder="99" value={f.ageMax} onChange={(e) => set("ageMax", e.target.value.replace(/\D/g, "").slice(0, 2))} aria-label="Edad máxima" />
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={f.showMembers} onChange={(e) => set("showMembers", e.target.checked)} />
+              <span>Mostrar también a quienes ya están en el grupo</span>
+            </label>
+          </div>
+        )}
+
+        <div className="invite-count muted small" role="status">
+          {data ? `${data.total} ${data.total === 1 ? "persona" : "personas"}${data.hasLocation ? ", de la más cerca a la más lejos" : ""}` : "Buscando…"}
+          {active && <button type="button" className="linkbtn small" onClick={() => { setF(NO_FILTERS); setMoreFilters(false); }}>Sacar filtros</button>}
+        </div>
+        {data && !data.hasLocation && f.maxKm != null && (
+          <p className="muted small">Para filtrar por distancia, activá tu ubicación en la pestaña Gente.</p>
+        )}
         {error && <p className="error" role="alert">{error}</p>}
+
         <ul className="members invite-list">
-          {people?.map((p) => (
+          {data?.people.map((p) => (
             <li key={p.id} className="member">
               <Link to={`/perfil/${p.id}`} className="member__who">
                 <Avatar src={p.photo} name={p.name} size={40} />
-                <span><b>{p.name}</b> <span className="muted">{p.age}</span></span>
+                <span className="invite-who">
+                  <span><b>{p.name}</b> <span className="muted">{p.age}</span></span>
+                  {(p.online || p.distance) && (
+                    <span className="muted small">
+                      {p.online && <><i className="dot dot--on" /> En línea</>}
+                      {p.online && p.distance && " · "}
+                      {p.distance}
+                    </span>
+                  )}
+                </span>
               </Link>
               <InviteAction state={p.state} onInvite={() => invite(p)} />
             </li>
           ))}
-          {people && people.length === 0 && (
-            <li className="muted">{q ? "No encontramos a nadie con ese nombre." : "Todavía no charlaste con nadie ni tenés favoritos. Buscá por nombre."}</li>
+          {data && data.people.length === 0 && (
+            <li className="muted">{q ? "No encontramos a nadie con ese nombre y esos filtros." : "No hay nadie con esos filtros. Probá ampliar la distancia."}</li>
           )}
         </ul>
+        {data?.hasMore && (
+          <button className="btn btn--ghost" disabled={loadingMore} onClick={more}>{loadingMore ? "Cargando…" : "Ver más gente"}</button>
+        )}
         <p className="muted small">La persona recibe la invitación y elige si entra.</p>
         <button className="btn" onClick={onClose}>Listo</button>
       </div>

@@ -170,7 +170,9 @@ export type Member = Author & { role: Role; joinedAt: string };
 
 /** Dónde está una persona respecto de un grupo, para invitarla. */
 export type InviteState = "member" | "invited" | "requested" | "declined" | null;
-export type InviteCandidate = Author & { state: InviteState };
+/** Alguien para invitar a un grupo, de la lista larga (como la grilla de Gente). */
+export type InviteCandidate = Author & { online: boolean; distance: string | null; state: InviteState };
+export type InviteCandidates = { people: InviteCandidate[]; total: number; hasMore: boolean; hasLocation: boolean };
 export type InvitableGroup = { id: string; name: string; state: InviteState };
 /** Invitación pendiente de un grupo (la ven dueño y moderadores). */
 export type SentInvite = { id: string; createdAt: string; user: Author };

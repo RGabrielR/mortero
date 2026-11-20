@@ -450,3 +450,14 @@ button.quote:hover { background: var(--surface-3); }
 }
 .notify-banner__text { flex: 1; display: grid; gap: 2px; min-width: 0; }
 .notify-banner__actions { flex: none; display: grid; gap: 4px; justify-items: center; }
+
+/* ---------- Invitar gente: filtros de la lista ---------- */
+.invite-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; flex: none; }
+.invite-filters::-webkit-scrollbar { display: none; }
+.invite-filters .chip { flex: none; height: 30px; padding: 0 12px; font-size: var(--text-sm); }
+.invite-more { display: flex; flex-direction: column; gap: 10px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); flex: none; }
+.field--inline { flex-direction: row; align-items: center; gap: 8px; }
+.input--num { width: 64px; text-align: center; }
+.invite-count { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: none; }
+.invite-who { display: flex; flex-direction: column; line-height: 1.25; }
+.invite-who .dot { display: inline-block; vertical-align: middle; margin-right: 4px; }
