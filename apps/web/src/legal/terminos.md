@@ -88,8 +88,12 @@ También podemos dar de baja qule.ar o cerrarla. Si pasa, vamos a avisar con tie
 
 Como la app está en beta, estos términos pueden cambiar. Si el cambio es importante, te avisamos en la app y te pedimos que aceptes la versión nueva. Si no estás de acuerdo, podés borrar tu cuenta.
 
-## 11. Ley aplicable
+## 11. Ley aplicable y jurisdicción
 
-Estos términos se rigen por las leyes de la República Argentina. Si hay un conflicto, primero intentemos resolverlo charlando. Si no se puede, intervienen los **tribunales ordinarios de la Ciudad Autónoma de Buenos Aires**.
+**11.1. Ley aplicable.** Los presentes Términos y Condiciones se rigen e interpretan de conformidad con las leyes de la República Argentina.
 
-Como usuarie, la ley te protege como consumidor: siempre podés elegir, en cambio, los tribunales de tu domicilio (Código Civil y Comercial, art. 1109, y Ley 24.240).
+**11.2. Resolución amistosa.** Las partes procurarán resolver de buena fe toda controversia relativa a la interpretación, validez, cumplimiento o ejecución de los presentes Términos y Condiciones. A tal efecto, el Usuario podrá formular su reclamo por los medios de contacto indicados en el punto 1.
+
+**11.3. Jurisdicción.** De no arribarse a una solución, toda controversia será sometida a la jurisdicción de los Tribunales Ordinarios de la Ciudad Autónoma de Buenos Aires.
+
+**11.4. Usuarios consumidores.** Lo dispuesto en el punto 11.3 se establece sin perjuicio de los derechos que asisten al Usuario que revista el carácter de consumidor en los términos del artículo 1° de la Ley N° 24.240 de Defensa del Consumidor y del artículo 1092 del Código Civil y Comercial de la Nación. En tal caso, el Usuario podrá optar por el tribunal correspondiente al lugar en que recibió o debió recibir la prestación, conforme el artículo 1109 del Código Civil y Comercial de la Nación, y toda cláusula de prórroga de jurisdicción que limite ese derecho se tendrá por no escrita.
