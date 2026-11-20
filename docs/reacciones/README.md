@@ -7,7 +7,7 @@ Los que usa la app están en `apps/web/public/reacciones/` (estilo 1, Degradé).
 
 | Clave | Nombre | Para qué |
 |---|---|---|
-| `hola` | Hola | Te cebo un mate: el saludo |
+| `hola` | Hola | Un mate recién cebado, con humito: el saludo |
 | `fuego` | Fuego | Estás que ardés |
 | `rayo` | Rayo | Me electrizaste |
 | `lengua` | Lengua | Con ganas, en tono pícaro |
