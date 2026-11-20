@@ -90,4 +90,6 @@ Como la app está en beta, estos términos pueden cambiar. Si el cambio es impor
 
 ## 11. Ley aplicable
 
-Estos términos se rigen por las leyes de la República Argentina. Si hay un conflicto, primero intentemos resolverlo charlando. Si no se puede, intervienen los tribunales competentes de la República Argentina, y como usuarie siempre podés recurrir a los de tu domicilio.
+Estos términos se rigen por las leyes de la República Argentina. Si hay un conflicto, primero intentemos resolverlo charlando. Si no se puede, intervienen los **tribunales ordinarios de la Ciudad Autónoma de Buenos Aires**.
+
+Como usuarie, la ley te protege como consumidor: siempre podés elegir, en cambio, los tribunales de tu domicilio (Código Civil y Comercial, art. 1109, y Ley 24.240).

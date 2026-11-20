@@ -30,5 +30,5 @@ Esta es una versión beta, escrita con lo que sabemos hoy. Pendiente:
 - [ ] **Mensajes borrados en grupos:** hoy el texto queda en la base (`status = 'deleted'`). Decidir si se borra de verdad o si se guarda un tiempo para moderar, y actualizar el punto 6 de la política.
 - [ ] **Backups:** hoy quedan en el mismo servidor (14 días). Gabriel arma una copia cifrada afuera; cuando esté, actualizar el punto 7 de la política.
 - [ ] **Proveedor de mails:** nombrarlo cuando esté definido.
-- [ ] **Jurisdicción:** definir si se fija una ciudad.
+- [x] **Jurisdicción:** tribunales ordinarios de la Ciudad Autónoma de Buenos Aires, sin quitarle a quien usa la app el derecho a ir a los de su domicilio (consumidor, CCyC art. 1109).
 - [ ] **Revisión legal:** que lo lea alguien que sepa de derecho, por ejemplo una organización LGBTIQ+ con área legal.
