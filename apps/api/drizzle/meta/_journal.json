@@ -43,6 +43,13 @@
       "when": 1795116017071,
       "tag": "0005_group_replies_mute",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795141548992,
+      "tag": "0006_album_videos",
+      "breakpoints": true
     }
   ]
 }

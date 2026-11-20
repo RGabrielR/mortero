@@ -43,6 +43,12 @@ export function closeSocket() {
 
 export type Author = { id: string; name: string; age: number; photo: string | null };
 
+/** Una foto o video del perfil o del álbum. `thumb` es la miniatura (en los videos, un fotograma). */
+export type Media = { url: string; kind: "photo" | "video"; thumb: string | null; seconds: number | null };
+
+/** Alguien con acceso a mi álbum. expiresAt null = sin límite. */
+export type AlbumGrant = Author & { expiresAt: string | null };
+
 export type Profile = {
   displayName: string;
   birthdate: string;
@@ -69,7 +75,7 @@ export type Me = {
     suspendedAt: string | null;
     suspendReason: string | null;
   }) | null;
-  photos: { id: string; url: string; position: number; isPrivate: boolean }[];
+  photos: (Media & { id: string; position: number; isPrivate: boolean })[];
 };
 
 export type PublicProfile = Omit<Profile, "birthdate"> & {
@@ -80,8 +86,10 @@ export type PublicProfile = Omit<Profile, "birthdate"> & {
   recent: boolean;
   distance: string | null;
   favorite: boolean;
-  privateAlbum: { count: number; photos: string[] | null } | null;
+  // items es null si no te lo compartieron; expiresAt es hasta cuándo lo podés ver (null = sin límite)
+  privateAlbum: { count: number; videos: number; items: Media[] | null; expiresAt: string | null } | null;
   iSharedAlbum: boolean;
+  sharedUntil: string | null;
 };
 
 export type NearbyPerson = {

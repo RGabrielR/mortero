@@ -4,12 +4,12 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { db, schema } from "../db/index.js";
 import {
-  ageFrom, authorsFor, imageUrl, isBlocked, newId, requireProfile, requireUser, type AppEnv,
+  ageFrom, authorsFor, imageUrl, isBlocked, mediaOut, newId, requireProfile, requireUser, type AppEnv,
 } from "../lib.js";
 import { emitToUser, isOnline } from "../realtime.js";
 import { distanceKm, distanceLabel } from "../geo.js";
 import { deleteImage, MAX_UPLOAD_BYTES, saveImage } from "../storage.js";
-import { hasAlbumAccess, recordView } from "./premium.js";
+import { albumAccessUntil, recordView } from "./premium.js";
 import { pushTo } from "../push.js";
 import { APP_NAME } from "../brand.js";
 
@@ -31,7 +31,8 @@ socialRoutes.get("/users/:id", async (c) => {
   const allPhotos = await db.select().from(photo).where(eq(photo.userId, id)).orderBy(asc(photo.position));
   const photos = allPhotos.filter((x) => !x.isPrivate);
   const privatePhotos = allPhotos.filter((x) => x.isPrivate);
-  const albumAccess = privatePhotos.length > 0 && (await hasAlbumAccess(id, me.id));
+  // undefined = no tiene acceso; null = sin límite; Date = hasta esa fecha
+  const albumUntil = privatePhotos.length > 0 ? (id === me.id ? null : await albumAccessUntil(id, me.id)) : undefined;
   // Lista explícita de campos públicos: nunca la fecha de nacimiento ni la celda de ubicación
   const mine = c.get("profile")!;
   await recordView(me.id, mine.incognito, id);
@@ -42,8 +43,8 @@ socialRoutes.get("/users/:id", async (c) => {
   const on = !p.incognito && isOnline(id);
   const [fav] = await db.select().from(schema.favorite)
     .where(and(eq(schema.favorite.userId, me.id), eq(schema.favorite.favoriteId, id)));
-  const [shared] = await db.select().from(schema.albumGrant)
-    .where(and(eq(schema.albumGrant.ownerId, me.id), eq(schema.albumGrant.granteeId, id)));
+  // Si yo le compartí mi álbum y hasta cuándo
+  const myGrant = id === me.id ? undefined : await albumAccessUntil(me.id, id);
   return c.json({
     id,
     displayName: p.displayName,
@@ -64,11 +65,17 @@ socialRoutes.get("/users/:id", async (c) => {
     online: on,
     recent: !p.incognito && (on || Date.now() - p.lastSeenAt.getTime() < 15 * 60_000),
     favorite: Boolean(fav),
-    // Álbum privado: cuántas fotos hay y, si te lo compartieron, las fotos
+    // Álbum privado: cuántas fotos y videos hay y, si te lo compartieron, el contenido y hasta cuándo lo ves
     privateAlbum: privatePhotos.length
-      ? { count: privatePhotos.length, photos: albumAccess ? privatePhotos.map((x) => imageUrl(x.key)) : null }
+      ? {
+          count: privatePhotos.length,
+          videos: privatePhotos.filter((x) => x.kind === "video").length,
+          items: albumUntil !== undefined ? privatePhotos.map(mediaOut) : null,
+          expiresAt: albumUntil ? albumUntil.toISOString() : null,
+        }
       : null,
-    iSharedAlbum: Boolean(shared),
+    iSharedAlbum: myGrant !== undefined,
+    sharedUntil: myGrant ? myGrant.toISOString() : null,
     distance: canShowDistance ? distanceLabel(distanceKm(mine.cellLat!, mine.cellLng!, p.cellLat!, p.cellLng!)) : null,
   });
 });
@@ -298,6 +305,11 @@ socialRoutes.post("/blocks", async (c) => {
   const { userId } = z.object({ userId: z.string() }).parse(await c.req.json());
   if (userId === me.id) throw new HTTPException(400, { message: "No podés bloquearte a vos" });
   await db.insert(block).values({ blockerId: me.id, blockedId: userId }).onConflictDoNothing();
+  // Al bloquear se corta el acceso a los álbumes en las dos direcciones
+  await db.delete(schema.albumGrant).where(or(
+    and(eq(schema.albumGrant.ownerId, me.id), eq(schema.albumGrant.granteeId, userId)),
+    and(eq(schema.albumGrant.ownerId, userId), eq(schema.albumGrant.granteeId, me.id)),
+  ));
   return c.json({ ok: true });
 });
 

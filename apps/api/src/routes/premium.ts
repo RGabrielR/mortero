@@ -1,7 +1,8 @@
 // Lo que en otras apps es "premium", acá es gratis para todo el mundo.
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lte, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { z } from "zod";
 import { db, schema } from "../db/index.js";
 import { authorsFor, blockedWith, isBlocked, newId, requireProfile, requireUser, type AppEnv } from "../lib.js";
 import { emitToUser } from "../realtime.js";
@@ -76,53 +77,92 @@ premiumRoutes.delete("/favorites/:userId", async (c) => {
 
 // ---------- Álbum privado ----------
 
+/** Por cuánto tiempo se puede compartir el álbum, en horas. null = sin límite. */
+export const ALBUM_DURATIONS = [1, 24, 168] as const;
+
+function durationLabel(hours: number | null) {
+  if (hours == null) return null;
+  if (hours === 1) return "1 hora";
+  if (hours === 168) return "7 días";
+  return `${hours} horas`;
+}
+
+const activeGrant = (now = new Date()) => or(isNull(albumGrant.expiresAt), gt(albumGrant.expiresAt, now));
+
 export async function hasAlbumAccess(ownerId: string, viewerId: string) {
   if (ownerId === viewerId) return true;
   const [g] = await db
     .select()
     .from(albumGrant)
-    .where(and(eq(albumGrant.ownerId, ownerId), eq(albumGrant.granteeId, viewerId)));
+    .where(and(eq(albumGrant.ownerId, ownerId), eq(albumGrant.granteeId, viewerId), activeGrant()));
   return Boolean(g);
 }
 
-/** Con quién compartí mi álbum privado. */
+/** Hasta cuándo `viewerId` puede ver el álbum de `ownerId` (undefined = no puede; null = sin límite). */
+export async function albumAccessUntil(ownerId: string, viewerId: string): Promise<Date | null | undefined> {
+  const [g] = await db
+    .select()
+    .from(albumGrant)
+    .where(and(eq(albumGrant.ownerId, ownerId), eq(albumGrant.granteeId, viewerId), activeGrant()));
+  return g ? g.expiresAt : undefined;
+}
+
+/** Con quién compartí mi álbum privado (solo los accesos vigentes). */
 premiumRoutes.get("/album/grants", async (c) => {
   const u = c.get("user");
+  // Los vencidos se limpian acá
+  await db.delete(albumGrant).where(and(eq(albumGrant.ownerId, u.id), lte(albumGrant.expiresAt, new Date())));
   const rows = await db.select().from(albumGrant).where(eq(albumGrant.ownerId, u.id)).orderBy(desc(albumGrant.createdAt));
   const authors = await authorsFor(rows.map((r) => r.granteeId));
-  return c.json(rows.flatMap((r) => (authors.get(r.granteeId) ? [authors.get(r.granteeId)!] : [])));
+  return c.json(rows.flatMap((r) => {
+    const a = authors.get(r.granteeId);
+    return a ? [{ ...a, expiresAt: r.expiresAt?.toISOString() ?? null }] : [];
+  }));
 });
 
-/** Compartir mi álbum privado con alguien. Le llega como mensaje en el chat. */
+/**
+ * Compartir mi álbum privado con alguien, por un tiempo o sin límite. Si ya lo tenía, se actualiza el plazo.
+ * Le llega como mensaje en el chat (solo si no lo tenía vigente).
+ */
 premiumRoutes.put("/album/grants/:userId", async (c) => {
   const u = c.get("user");
   const target = c.req.param("userId");
+  const { hours } = z
+    .object({ hours: z.union([z.literal(1), z.literal(24), z.literal(168), z.null()]).default(null) })
+    .parse(await c.req.json().catch(() => ({})));
   if (target === u.id) throw new HTTPException(400, { message: "Ya ves tu propio álbum" });
   if (await isBlocked(u.id, target)) throw new HTTPException(404, { message: "Perfil no disponible" });
   const [p] = await db.select().from(profile).where(eq(profile.userId, target));
   if (!p) throw new HTTPException(404, { message: "Perfil no disponible" });
-  const inserted = await db.insert(albumGrant).values({ ownerId: u.id, granteeId: target }).onConflictDoNothing().returning();
 
-  if (inserted.length) {
-    // Aviso en la conversación (la crea si no existe)
+  const hadAccess = (await albumAccessUntil(u.id, target)) !== undefined;
+  const now = new Date();
+  const expiresAt = hours == null ? null : new Date(now.getTime() + hours * 3_600_000);
+  await db
+    .insert(albumGrant)
+    .values({ ownerId: u.id, granteeId: target, expiresAt, createdAt: now })
+    .onConflictDoUpdate({ target: [albumGrant.ownerId, albumGrant.granteeId], set: { expiresAt, createdAt: now } });
+
+  if (!hadAccess) {
+    // Aviso en la conversación (la crea si no existe). El cuerpo dice por cuánto tiempo.
     const key = u.id < target ? { userA: u.id, userB: target } : { userA: target, userB: u.id };
     await db.insert(conversation).values({ id: newId(), ...key }).onConflictDoNothing();
     const [conv] = await db.select().from(conversation)
       .where(and(eq(conversation.userA, key.userA), eq(conversation.userB, key.userB)));
-    const now = new Date();
+    const body = durationLabel(hours);
     const [row] = await db.insert(directMessage)
-      .values({ id: newId(), conversationId: conv.id, senderId: u.id, kind: "album", createdAt: now })
+      .values({ id: newId(), conversationId: conv.id, senderId: u.id, kind: "album", body, createdAt: now })
       .returning();
     await db.update(conversation).set({ lastMessageAt: now }).where(eq(conversation.id, conv.id));
     const msg = {
-      id: row.id, conversationId: conv.id, senderId: u.id, kind: "album", body: null, photo: null,
+      id: row.id, conversationId: conv.id, senderId: u.id, kind: "album", body, photo: null,
       expiring: false, opened: false, readAt: null, createdAt: now.toISOString(),
     };
     emitToUser(u.id, "dm:message", msg);
     emitToUser(target, "dm:message", msg);
     pushTo(target, { title: APP_NAME, body: "Tenés un mensaje nuevo", url: `/mensajes/${conv.id}`, tag: `dm-${conv.id}` }).catch(() => {});
   }
-  return c.json({ ok: true });
+  return c.json({ ok: true, expiresAt: expiresAt?.toISOString() ?? null });
 });
 
 premiumRoutes.delete("/album/grants/:userId", async (c) => {

@@ -162,9 +162,11 @@ export function Conversation() {
             <div key={m.id} className={`bubble ${mine ? "bubble--mine" : ""} ${m.kind === "album" ? "bubble--album" : ""}`}>
               {m.kind === "album" ? (
                 mine ? (
-                  <p><LockIcon /> Le compartiste tu álbum privado</p>
+                  <p><LockIcon /> Le compartiste tu álbum privado{m.body ? ` por ${m.body}` : ""}</p>
                 ) : (
-                  <Link to={`/perfil/${m.senderId}`} className="album-msg"><LockIcon /> Te compartió su álbum privado · <u>Ver</u></Link>
+                  <Link to={`/perfil/${m.senderId}?album=1`} className="album-msg">
+                    <LockIcon /> Te compartió su álbum privado{m.body ? ` por ${m.body}` : ""} · <u>Ver</u>
+                  </Link>
                 )
               ) : m.expiring ? (
                 mine ? (

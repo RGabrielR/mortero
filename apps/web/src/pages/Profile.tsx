@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { api, type PublicProfile } from "../api";
 import { BackIcon, LockIcon, StarIcon } from "../components/Icons";
 import { useMe } from "../App";
 import { ReportDialog } from "../components/ReportDialog";
+import { AlbumGrid, AlbumViewer, untilLabel } from "../components/AlbumViewer";
+
+const SHARE_OPTIONS: { hours: number | null; label: string }[] = [
+  { hours: 1, label: "1 hora" },
+  { hours: 24, label: "24 horas" },
+  { hours: 168, label: "7 días" },
+  { hours: null, label: "Sin límite" },
+];
 
 type StatsInput = Pick<PublicProfile, "about" | "heightCm" | "weightKg" | "bodyType" | "position" | "relationship" | "pronouns" | "hivStatus" | "lastTested" | "tribes" | "lookingFor">;
 
@@ -55,13 +63,26 @@ export function ProfilePage() {
   const [confirmBlock, setConfirmBlock] = useState(false);
   const { me } = useMe();
   const hasOwnAlbum = Boolean(me?.photos.some((x) => x.isPrivate));
+  const [params, setParams] = useSearchParams();
+  // ?album=1 (desde el mensaje del chat) abre el álbum directo
+  const [viewing, setViewing] = useState<number | null>(null);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     setP(null);
     setMissing(false);
     setPhotoIdx(0);
-    api<PublicProfile>(`/users/${id}`).then(setP).catch(() => setMissing(true));
+    api<PublicProfile>(`/users/${id}`).then((x) => {
+      setP(x);
+      if (params.get("album") === "1" && x.privateAlbum?.items?.length) setViewing(0);
+    }).catch(() => setMissing(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  function closeViewer() {
+    setViewing(null);
+    if (params.get("album")) setParams({}, { replace: true });
+  }
 
   async function message() {
     const { id: convId } = await api<{ id: string }>("/conversations", { method: "POST", json: { userId: id } });
@@ -75,11 +96,17 @@ export function ProfilePage() {
     await api(`/favorites/${id}`, { method: fav ? "PUT" : "DELETE" }).catch(() => setP({ ...p, favorite: !fav }));
   }
 
-  async function toggleShareAlbum() {
+  async function shareAlbum(hours: number | null) {
     if (!p) return;
-    const share = !p.iSharedAlbum;
-    await api(`/album/grants/${id}`, { method: share ? "PUT" : "DELETE" });
-    setP({ ...p, iSharedAlbum: share });
+    const r = await api<{ expiresAt: string | null }>(`/album/grants/${id}`, { method: "PUT", json: { hours } });
+    setP({ ...p, iSharedAlbum: true, sharedUntil: r.expiresAt });
+    setSharing(false);
+  }
+
+  async function unshareAlbum() {
+    if (!p) return;
+    await api(`/album/grants/${id}`, { method: "DELETE" });
+    setP({ ...p, iSharedAlbum: false, sharedUntil: null });
   }
 
   async function doBlock() {
@@ -151,13 +178,14 @@ export function ProfilePage() {
 
         {p.privateAlbum && (
           <section className="album">
-            <h3 className="album__title"><LockIcon /> Álbum privado · {p.privateAlbum.count} {p.privateAlbum.count === 1 ? "foto" : "fotos"}</h3>
-            {p.privateAlbum.photos ? (
-              <div className="album__grid">
-                {p.privateAlbum.photos.map((src, i) => (
-                  <img key={src} src={src} alt={`Foto privada ${i + 1} de ${p.displayName}`} loading="lazy" />
-                ))}
-              </div>
+            <h3 className="album__title">
+              <LockIcon /> Álbum privado · {albumCount(p.privateAlbum.count, p.privateAlbum.videos)}
+            </h3>
+            {p.privateAlbum.items ? (
+              <>
+                {!p.isMe && <p className="muted small album__until">Lo podés ver {untilLabel(p.privateAlbum.expiresAt)}.</p>}
+                <AlbumGrid items={p.privateAlbum.items} onOpen={setViewing} />
+              </>
             ) : (
               <p className="muted small">{p.displayName} todavía no te compartió su álbum.</p>
             )}
@@ -167,9 +195,31 @@ export function ProfilePage() {
         <ProfileStats p={p} />
 
         {!p.isMe && hasOwnAlbum && (
-          <button className="btn btn--ghost" onClick={toggleShareAlbum}>
-            <LockIcon /> {p.iSharedAlbum ? "Dejar de compartir mi álbum privado" : "Compartirle mi álbum privado"}
-          </button>
+          <div className="share-album">
+            {p.iSharedAlbum ? (
+              <>
+                <p className="small"><LockIcon /> Le compartiste tu álbum · {untilLabel(p.sharedUntil)}</p>
+                <div className="row">
+                  <button className="btn btn--ghost" onClick={() => setSharing(!sharing)}>Cambiar plazo</button>
+                  <button className="btn btn--ghost" onClick={unshareAlbum}>Dejar de compartir</button>
+                </div>
+              </>
+            ) : (
+              <button className="btn btn--ghost" onClick={() => setSharing(!sharing)} aria-expanded={sharing}>
+                <LockIcon /> Compartirle mi álbum privado
+              </button>
+            )}
+            {sharing && (
+              <div className="share-album__options" role="group" aria-label="Por cuánto tiempo">
+                <p className="muted small">¿Por cuánto tiempo lo puede ver?</p>
+                <div className="chips">
+                  {SHARE_OPTIONS.map((o) => (
+                    <button key={o.label} className="chip" onClick={() => shareAlbum(o.hours)}>{o.label}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         )}
         {!p.isMe && (
           <div className="profile__safety">
@@ -190,7 +240,18 @@ export function ProfilePage() {
           </div>
         )}
       </div>
+      {viewing != null && p.privateAlbum?.items && (
+        <AlbumViewer items={p.privateAlbum.items} start={viewing} title={`Álbum de ${p.displayName}`} onClose={closeViewer} />
+      )}
       {reporting && <ReportDialog userId={p.id} name={p.displayName} onClose={() => setReporting(false)} />}
     </div>
   );
+}
+
+function albumCount(total: number, videos: number) {
+  const photos = total - videos;
+  const parts = [];
+  if (photos) parts.push(`${photos} ${photos === 1 ? "foto" : "fotos"}`);
+  if (videos) parts.push(`${videos} ${videos === 1 ? "video" : "videos"}`);
+  return parts.join(" y ");
 }

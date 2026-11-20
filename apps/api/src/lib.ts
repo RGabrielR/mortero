@@ -40,6 +40,15 @@ export const imageUrl = (key: string | null | undefined) => (key ? `/api/files/$
 /** Versión chica (480 px) para grillas, avatares y listas: carga mucho más rápido. */
 export const thumbUrl = (key: string | null | undefined) => (key ? `/api/files/${key}?s=thumb` : null);
 
+/** Una foto o video del perfil/álbum, tal como lo ve la web. */
+export const mediaOut = (x: { key: string; kind: string; posterKey: string | null; seconds: number | null }) => ({
+  url: imageUrl(x.key)!,
+  kind: x.kind === "video" ? ("video" as const) : ("photo" as const),
+  // Miniatura: de las fotos, la versión chica; de los videos, el fotograma
+  thumb: thumbUrl(x.kind === "video" ? x.posterKey : x.key),
+  seconds: x.seconds ?? null,
+});
+
 export type Author = { id: string; name: string; age: number; photo: string | null };
 
 /** Nombre, edad y foto principal (pública) de varios usuarios. */

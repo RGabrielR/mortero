@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { api, authClient, closeSocket, upload, type Author, type Profile } from "../api";
+import { api, authClient, closeSocket, upload, type AlbumGrant, type Author, type Profile } from "../api";
 import { useMe } from "../App";
 import { APP_NAME } from "../brand";
+import { AlbumViewer, duration, untilLabel } from "../components/AlbumViewer";
 import { Avatar } from "../components/Avatar";
 import { EyeIcon, LockIcon, PlusIcon, StarIcon } from "../components/Icons";
 import { disablePush, enablePush, pushState, type PushState } from "../push";
@@ -106,7 +107,9 @@ export function MyProfile() {
   const [deleteText, setDeleteText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const nextPrivate = useRef(false);
-  const [grants, setGrants] = useState<Author[]>([]);
+  const [grants, setGrants] = useState<AlbumGrant[]>([]);
+  const [progress, setProgress] = useState<{ done: number; total: number; video: boolean } | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
 
   useEffect(() => {
     if (me?.profile) {
@@ -121,7 +124,7 @@ export function MyProfile() {
 
   useEffect(() => {
     api<Author[]>("/blocks").then(setBlocked).catch(() => {});
-    api<Author[]>("/album/grants").then(setGrants).catch(() => {});
+    api<AlbumGrant[]>("/album/grants").then(setGrants).catch(() => {});
   }, []);
 
   if (!me?.profile || !form) return null;
@@ -148,7 +151,11 @@ export function MyProfile() {
 
   function pick(priv: boolean) {
     nextPrivate.current = priv;
-    fileRef.current?.click();
+    const input = fileRef.current;
+    if (!input) return;
+    // Al álbum se pueden subir fotos y videos; al perfil, solo fotos
+    input.accept = priv ? "image/*,video/*" : "image/*";
+    input.click();
   }
 
   async function setPrivate(photoId: string, isPrivate: boolean) {
@@ -161,17 +168,33 @@ export function MyProfile() {
     setGrants((g) => g.filter((x) => x.id !== userId));
   }
 
-  async function addPhoto(file: File, priv = false) {
+  async function blockFromAlbum(g: AlbumGrant) {
+    if (!confirm(`¿Bloquear a ${g.name}? Pierde el acceso a tu álbum y no van a poder verse ni escribirse.`)) return;
+    await api("/blocks", { method: "POST", json: { userId: g.id } });
+    setGrants((x) => x.filter((y) => y.id !== g.id));
+    setBlocked((b) => [{ id: g.id, name: g.name, age: g.age, photo: g.photo }, ...b]);
+  }
+
+  /** Sube varios archivos seguidos (de a uno, así el servidor procesa los videos sin trabarse). */
+  async function addFiles(files: File[], priv = false) {
+    if (!files.length) return;
     setUploading(true);
     setError("");
-    try {
-      await upload("/me/photos", file, priv ? { private: "1" } : {});
-      await reload();
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setUploading(false);
+    const errors: string[] = [];
+    for (const [i, file] of files.entries()) {
+      setProgress({ done: i, total: files.length, video: file.type.startsWith("video/") });
+      try {
+        await upload("/me/photos", file, priv ? { private: "1" } : {});
+      } catch (err) {
+        errors.push(`${file.name}: ${(err as Error).message}`);
+        // Si se llenó el álbum o el perfil, no tiene sentido seguir
+        if (/hasta \d+/.test((err as Error).message)) break;
+      }
     }
+    await reload();
+    setProgress(null);
+    setUploading(false);
+    if (errors.length) setError(errors.join(" · "));
   }
 
   async function removePhoto(photoId: string) {
@@ -225,11 +248,11 @@ export function MyProfile() {
       <NotificationsSetting />
 
       <section className="section">
-        <h2 className="section__title">Fotos <span className="muted">{me.photos.length}/6</span></h2>
+        <h2 className="section__title">Fotos <span className="muted">{publicPhotos.length}/6</span></h2>
         <div className="photos">
           {publicPhotos.map((p, i) => (
             <div key={p.id} className="photos__item">
-              <img src={p.url} alt={`Tu foto ${i + 1}`} />
+              <img src={p.thumb ?? p.url} alt={`Tu foto ${i + 1}`} />
               {i === 0 ? <span className="photos__main">Principal</span> : (
                 <button className="photos__action" onClick={() => makeMain(p.id)}>Hacer principal</button>
               )}
@@ -237,7 +260,7 @@ export function MyProfile() {
               <button className="photos__lock" aria-label="Pasar al álbum privado" title="Pasar al álbum privado" onClick={() => setPrivate(p.id, true)}><LockIcon /></button>
             </div>
           ))}
-          {me.photos.length < 6 && (
+          {publicPhotos.length < 6 && (
             <button className="photos__add" onClick={() => pick(false)} disabled={uploading}>
               {uploading ? "Subiendo…" : <><PlusIcon /> Agregar</>}
             </button>
@@ -247,31 +270,45 @@ export function MyProfile() {
       </section>
 
       <section className="section">
-        <h2 className="section__title"><LockIcon /> Álbum privado <span className="muted">{privatePhotos.length}</span></h2>
-        <p className="muted small" style={{ marginBottom: 10 }}>Solo lo ve la gente a la que se lo compartís desde su perfil. Podés dejar de compartirlo cuando quieras.</p>
+        <h2 className="section__title"><LockIcon /> Álbum privado <span className="muted">{privatePhotos.length}/40</span></h2>
+        <p className="muted small" style={{ marginBottom: 10 }}>
+          Fotos y videos (hasta 1 minuto) que solo ve la gente a la que se lo compartís desde su perfil, por 1 hora, 24 horas, 7 días o sin límite. Podés quitar el acceso cuando quieras.
+        </p>
         <div className="photos">
           {privatePhotos.map((p, i) => (
             <div key={p.id} className="photos__item">
-              <img src={p.url} alt={`Tu foto privada ${i + 1}`} />
-              <button className="photos__action" onClick={() => setPrivate(p.id, false)}>Hacer pública</button>
-              <button className="photos__remove" aria-label="Borrar foto" onClick={() => removePhoto(p.id)}>✕</button>
+              <button className="photos__open" onClick={() => setViewing(i)} aria-label={`Ver ${p.kind === "video" ? "video" : "foto"} ${i + 1}`}>
+                {p.thumb ? <img src={p.thumb} alt="" /> : <span className="album__nothumb" />}
+                {p.kind === "video" && <span className="album__play">▶ {duration(p.seconds)}</span>}
+              </button>
+              {p.kind === "photo" && <button className="photos__action" onClick={() => setPrivate(p.id, false)}>Hacer pública</button>}
+              <button className="photos__remove" aria-label="Borrar" onClick={() => removePhoto(p.id)}>✕</button>
             </div>
           ))}
-          {me.photos.length < 6 && (
+          {privatePhotos.length < 40 && (
             <button className="photos__add" onClick={() => pick(true)} disabled={uploading}>
-              {uploading ? "Subiendo…" : <><PlusIcon /> Privada</>}
+              {uploading ? "Subiendo…" : <><PlusIcon /> Fotos y videos</>}
             </button>
           )}
         </div>
+        {progress && (
+          <p className="muted small" role="status">
+            Subiendo {progress.done + 1} de {progress.total}{progress.video ? " · los videos tardan un poco más en procesarse" : ""}…
+          </p>
+        )}
         {grants.length > 0 && (
           <>
-            <h3 className="subhead" style={{ margin: "14px 0 8px" }}>Lo compartiste con</h3>
-            <ul className="blocked">
+            <h3 className="subhead" style={{ margin: "14px 0 8px" }}>Lo pueden ver</h3>
+            <ul className="blocked grants">
               {grants.map((g) => (
                 <li key={g.id}>
                   <Avatar src={g.photo} name={g.name} size={36} />
-                  <span>{g.name}</span>
-                  <button className="linkbtn" onClick={() => revoke(g.id)}>Dejar de compartir</button>
+                  <span className="grants__who">
+                    <Link to={`/perfil/${g.id}`}>{g.name}</Link>
+                    <small className="muted">{untilLabel(g.expiresAt)}</small>
+                  </span>
+                  <button className="linkbtn" onClick={() => revoke(g.id)}>Quitar</button>
+                  <button className="linkbtn linkbtn--danger" onClick={() => blockFromAlbum(g)}>Bloquear</button>
                 </li>
               ))}
             </ul>
@@ -281,13 +318,17 @@ export function MyProfile() {
           ref={fileRef}
           type="file"
           accept="image/*"
+          multiple
           hidden
           onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) addPhoto(f, nextPrivate.current);
+            const files = Array.from(e.target.files ?? []);
+            addFiles(files, nextPrivate.current);
             e.target.value = "";
           }}
         />
+        {viewing != null && (
+          <AlbumViewer items={privatePhotos} start={viewing} title="Tu álbum privado" onClose={() => setViewing(null)} />
+        )}
       </section>
 
       <form className="section form" onSubmit={save}>

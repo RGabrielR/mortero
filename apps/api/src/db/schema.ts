@@ -88,6 +88,11 @@ export const photo = pgTable("photo", {
   key: text("key").notNull(),
   position: integer("position").notNull().default(0),
   isPrivate: boolean("is_private").notNull().default(false),
+  // "photo" o "video". Los videos solo pueden estar en el álbum privado.
+  kind: text("kind").notNull().default("photo"),
+  // Miniatura del video (una foto .webp sacada del primer segundo)
+  posterKey: text("poster_key"),
+  seconds: integer("seconds"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("photo_user_idx").on(t.userId, t.position)]);
 
@@ -95,6 +100,8 @@ export const photo = pgTable("photo", {
 export const albumGrant = pgTable("album_grant", {
   ownerId: text("owner_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   granteeId: text("grantee_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  // Hasta cuándo lo puede ver. null = sin límite.
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [primaryKey({ columns: [t.ownerId, t.granteeId] })]);
 

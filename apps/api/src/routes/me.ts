@@ -1,12 +1,14 @@
-import { and, asc, eq, sql } from "drizzle-orm";
+import { createReadStream } from "node:fs";
+import { Readable } from "node:stream";
+import { and, asc, eq, or } from "drizzle-orm";
 import { mailEnabled } from "../mail.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { db, schema } from "../db/index.js";
-import { ageFrom, imageUrl, newId, requireProfile, requireUser, type AppEnv } from "../lib.js";
+import { ageFrom, mediaOut, newId, requireProfile, requireUser, type AppEnv } from "../lib.js";
 import { syncGroupRoom } from "../realtime.js";
-import { deleteImage, MAX_UPLOAD_BYTES, readImage, saveImage } from "../storage.js";
+import { deleteImage, MAX_UPLOAD_BYTES, MAX_VIDEO_BYTES, readImage, saveImage, saveVideo, videoEnabled, videoFile } from "../storage.js";
 import { googleEnabled } from "../auth.js";
 import { hasAlbumAccess } from "./premium.js";
 import { isAdminEmail } from "./admin.js";
@@ -42,9 +44,14 @@ meRoutes.get("/config", (c) => c.json({ google: googleEnabled, passwordReset: ma
 meRoutes.get("/files/:key", requireUser, async (c) => {
   const key = c.req.param("key");
   const viewer = c.get("user").id;
-  // Foto de álbum privado: solo dueño o gente con acceso
-  const [ph] = await db.select().from(photo).where(eq(photo.key, key));
+  // Foto o video de álbum privado (o la miniatura de un video): solo dueño o gente con acceso vigente
+  const [ph] = await db.select().from(photo).where(or(eq(photo.key, key), eq(photo.posterKey, key)));
   if (ph?.isPrivate && !(await hasAlbumAccess(ph.userId, viewer))) return c.notFound();
+  const video = await videoFile(key);
+  if (video) {
+    if (!ph) return c.notFound();
+    return serveVideo(c.req.header("range"), video);
+  }
   // Foto de mensaje privado: solo las dos personas de la charla; si es temporal, solo quien la recibe tras abrirla
   const [dm] = await db.select().from(directMessage).where(eq(directMessage.photoKey, key));
   if (dm) {
@@ -62,6 +69,31 @@ meRoutes.get("/files/:key", requireUser, async (c) => {
   });
 });
 
+/** Sirve un video por partes (Range): Safari no reproduce videos sin esto, y así se puede adelantar. */
+function serveVideo(range: string | undefined, v: { file: string; size: number }) {
+  const headers: Record<string, string> = { "Content-Type": "video/mp4", "Accept-Ranges": "bytes", "Cache-Control": "no-store" };
+  let start = 0;
+  let end = v.size - 1;
+  let status = 200;
+  const m = range ? /^bytes=(\d*)-(\d*)$/.exec(range.trim()) : null;
+  if (m) {
+    if (m[1]) {
+      start = Number(m[1]);
+      if (m[2]) end = Math.min(Number(m[2]), v.size - 1);
+    } else if (m[2]) {
+      start = Math.max(0, v.size - Number(m[2]));
+    }
+    if (start > end || start >= v.size) {
+      return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${v.size}` } });
+    }
+    status = 206;
+    headers["Content-Range"] = `bytes ${start}-${end}/${v.size}`;
+  }
+  headers["Content-Length"] = String(end - start + 1);
+  const body = Readable.toWeb(createReadStream(v.file, { start, end })) as ReadableStream;
+  return new Response(body, { status, headers });
+}
+
 meRoutes.get("/me", requireUser, async (c) => {
   const u = c.get("user");
   const p = c.get("profile");
@@ -75,7 +107,7 @@ meRoutes.get("/me", requireUser, async (c) => {
           return { ...rest, age: ageFrom(p.birthdate), hasLocation: cellLat != null && cellLng != null };
         })()
       : null,
-    photos: photos.map((x) => ({ id: x.id, url: imageUrl(x.key), position: x.position, isPrivate: x.isPrivate })),
+    photos: photos.map((x) => ({ id: x.id, position: x.position, isPrivate: x.isPrivate, ...mediaOut(x) })),
   });
 });
 
@@ -105,30 +137,51 @@ meRoutes.put("/me/profile", requireUser, async (c) => {
   return c.json({ ok: true });
 });
 
+/** Hasta cuántas fotos y videos puede tener el álbum privado. */
+const MAX_ALBUM = 40;
+
+/** Subir una foto (al perfil o al álbum) o un video (solo al álbum). Se sube de a un archivo; la web manda varios seguidos. */
 meRoutes.post("/me/photos", requireUser, requireProfile, async (c) => {
   const u = c.get("user");
   const body = await c.req.parseBody();
   const file = body.file;
-  if (!(file instanceof File)) throw new HTTPException(400, { message: "Falta la foto" });
-  if (file.size > MAX_UPLOAD_BYTES) throw new HTTPException(413, { message: "La foto pesa demasiado (máx. 12 MB)" });
-  const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(photo).where(eq(photo.userId, u.id));
-  if (n >= MAX_PHOTOS) throw new HTTPException(400, { message: `Podés tener hasta ${MAX_PHOTOS} fotos` });
-  let key: string;
+  if (!(file instanceof File)) throw new HTTPException(400, { message: "Falta el archivo" });
+  const isPrivate = body.private === "1";
+  const isVideo = file.type.startsWith("video/");
+  if (isVideo && !isPrivate) throw new HTTPException(400, { message: "Los videos solo van en el álbum privado" });
+  if (isVideo && !videoEnabled) throw new HTTPException(400, { message: "Por ahora no se pueden subir videos" });
+  if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_UPLOAD_BYTES)) {
+    throw new HTTPException(413, { message: isVideo ? "El video pesa demasiado (máx. 80 MB)" : "La foto pesa demasiado (máx. 12 MB)" });
+  }
+  const mine = await db.select({ isPrivate: photo.isPrivate }).from(photo).where(eq(photo.userId, u.id));
+  const same = mine.filter((x) => x.isPrivate === isPrivate).length;
+  if (isPrivate && same >= MAX_ALBUM) throw new HTTPException(400, { message: `Tu álbum puede tener hasta ${MAX_ALBUM} fotos y videos` });
+  if (!isPrivate && same >= MAX_PHOTOS) throw new HTTPException(400, { message: `Podés tener hasta ${MAX_PHOTOS} fotos en tu perfil` });
+
+  let saved: { key: string; posterKey: string | null; seconds: number | null };
   try {
-    key = await saveImage(await file.arrayBuffer());
+    saved = isVideo ? await saveVideo(await file.arrayBuffer()) : { key: await saveImage(await file.arrayBuffer()), posterKey: null, seconds: null };
   } catch {
-    throw new HTTPException(400, { message: "No pudimos leer esa imagen" });
+    throw new HTTPException(400, { message: isVideo ? "No pudimos procesar ese video" : "No pudimos leer esa imagen" });
   }
   const id = newId();
-  const isPrivate = body.private === "1";
-  await db.insert(photo).values({ id, userId: u.id, key, position: n, isPrivate });
-  return c.json({ id, url: imageUrl(key), position: n, isPrivate });
+  const kind = isVideo ? "video" : "photo";
+  const position = mine.length;
+  await db.insert(photo).values({ id, userId: u.id, position, isPrivate, kind, ...saved });
+  return c.json({ id, position, isPrivate, ...mediaOut({ kind, ...saved }) });
 });
 
 /** Pasar una foto al álbum privado o sacarla. */
 meRoutes.patch("/me/photos/:id", requireUser, async (c) => {
   const u = c.get("user");
   const { isPrivate } = z.object({ isPrivate: z.boolean() }).parse(await c.req.json());
+  const [current] = await db.select().from(photo).where(and(eq(photo.id, c.req.param("id")), eq(photo.userId, u.id)));
+  if (!current) return c.notFound();
+  if (!isPrivate && current.kind === "video") throw new HTTPException(400, { message: "Los videos solo van en el álbum privado" });
+  if (!isPrivate && current.isPrivate) {
+    const pub = await db.select({ id: photo.id }).from(photo).where(and(eq(photo.userId, u.id), eq(photo.isPrivate, false)));
+    if (pub.length >= MAX_PHOTOS) throw new HTTPException(400, { message: `Ya tenés ${MAX_PHOTOS} fotos en tu perfil` });
+  }
   const [row] = await db
     .update(photo)
     .set({ isPrivate })
@@ -146,6 +199,7 @@ meRoutes.delete("/me/photos/:id", requireUser, async (c) => {
     .returning();
   if (!row) return c.notFound();
   await deleteImage(row.key);
+  if (row.posterKey) await deleteImage(row.posterKey);
   // Reordenar las que quedan
   const rest = await db.select().from(photo).where(eq(photo.userId, u.id)).orderBy(asc(photo.position));
   for (const [i, p] of rest.entries()) {
@@ -172,7 +226,10 @@ meRoutes.delete("/me", requireUser, async (c) => {
   const photos = await db.select().from(photo).where(eq(photo.userId, u.id));
   const dmPhotos = await db.select().from(directMessage).where(eq(directMessage.senderId, u.id));
   await db.delete(user).where(eq(user.id, u.id)); // en cascada: perfil, fotos, mensajes, sesiones, etc.
-  for (const p of photos) await deleteImage(p.key);
+  for (const p of photos) {
+    await deleteImage(p.key);
+    if (p.posterKey) await deleteImage(p.posterKey);
+  }
   for (const m of dmPhotos) if (m.photoKey) await deleteImage(m.photoKey);
   return c.json({ ok: true });
 });

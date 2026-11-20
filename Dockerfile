@@ -1,4 +1,4 @@
-# Imagen de producción de mortero: un solo contenedor sirve el API, el chat en vivo y la web.
+# Imagen de producción de qule.ar: un solo contenedor sirve el API, el chat en vivo y la web.
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -9,6 +9,8 @@ COPY . .
 RUN npm run build --workspace web
 
 FROM node:24-bookworm-slim
+# ffmpeg (el paquete oficial de Debian) procesa los videos del álbum: los corta, los achica y les borra los metadatos
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production \
     PORT=3001 \
     DATA_DIR=/data
