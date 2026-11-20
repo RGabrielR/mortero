@@ -16,6 +16,7 @@ Todo sale de un solo archivo: [`packages/brand/src/index.ts`](../packages/brand/
 | Qué | De dónde sale |
 |---|---|
 | Nombre de la app (`APP_NAME`) y descripción | `packages/brand`. La web y el API lo importan de ahí (`./brand`). |
+| Lema (`APP_SLOGAN`): "Poné la pava." | `packages/brand`. Va en el login, el pie de los mails, el README y las piezas de `docs/marca`. |
 | Variables CSS: colores, temas, tamaños de letra, radios, sombras, capas | `packages/brand` las genera; `vite.config.ts` las carga con `import "virtual:brand.css"`. |
 | Color de la barra del navegador, fuentes de Google y nombre en `index.html` | `vite.config.ts` completa los `%MARCADORES%` de `index.html`. |
 | `manifest.webmanifest` (la app instalada) | Lo arma `vite.config.ts` con `webManifest()`. Ya no está en `public/`. |
@@ -112,6 +113,10 @@ El mate culo: un mate con su bombilla en el que el cuenco es una cola. Hay conte
 
 - **En la app** se usa el componente `Logo`. En las pantallas de entrada (login, bienvenida, contraseña) va arriba del nombre en texto (`Wordmark`). Sin texto alternativo, porque el nombre ya está al lado.
 - **Fuera de la app** (redes, presentaciones): los archivos de [`docs/marca`](marca/README.md).
+
+## Lema
+
+**Poné la pava.** Es una invitación: poner la pava es lo primero que hacés cuando viene alguien, el arranque de la charla. Tiene el mismo guiño que el mate. Se eligió en el hilo de Look and feel y vive en `APP_SLOGAN` (`packages/brand`): no se escribe a mano en las pantallas.
 
 ## Tono de los textos
 

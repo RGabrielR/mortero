@@ -1,5 +1,7 @@
 # qule.ar
 
+**Poné la pava.**
+
 App comunitaria, gratuita y de código abierto para conocer gente cerca y charlar en grupos.
 
 - **Gratis para siempre.** Todo lo que en otras apps es "premium" acá viene incluido.

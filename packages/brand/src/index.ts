@@ -19,6 +19,8 @@
 /** Nombre de la app. Para renombrarla alcanza con cambiar esto. */
 export const APP_NAME = "qule.ar";
 export const APP_DESCRIPTION = "App comunitaria, gratuita y de código abierto para conocer gente y charlar en grupos.";
+/** El lema: va con el logo (login, mails, README, piezas para redes). Elegido en la discusión de Look and feel. */
+export const APP_SLOGAN = "Poné la pava.";
 
 // ---------- Colores ----------
 

@@ -7,7 +7,7 @@ El mate culo en vectores, listo para usar fuera de la app: redes, presentaciones
 | `qule-logo.svg` / `.png` | El mate solo, sobre negro. Sirve de foto de perfil: entra entero en el recorte circular. | 2048 × 2048 |
 | `qule-logo-transparente.svg` / `.png` | El mate sin fondo, para montarlo sobre otra cosa | 2048 × 2048 |
 | `qule-logo-marca.svg` / `.png` | El mate + "qule.ar" | 3200 × 1800 (16:9) |
-| `qule-logo-marca-lema.svg` / `.png` | El mate + "qule.ar" + "cebate una charla." | 3200 × 1800 (16:9) |
+| `qule-logo-marca-lema.svg` / `.png` | El mate + "qule.ar" + el lema, "Poné la pava." | 3200 × 1800 (16:9) |
 
 Las versiones 16:9 son las que Twitter/X muestra enteras en el timeline.
 
