@@ -12,6 +12,22 @@ export const auth = betterAuth({
   basePath: "/api/auth",
   secret: env.BETTER_AUTH_SECRET,
   trustedOrigins: [env.APP_URL],
+  // IP real de quien usa la app, para el límite de intentos y la sesión. Sale de un encabezado que el proxy de
+  // adelante pisa siempre (CLIENT_IP_HEADER, ver docs/DEPLOY.md). Por defecto Better Auth usaba X-Forwarded-For,
+  // que puede mandar cualquiera: con eso el límite de intentos se salteaba.
+  advanced: { ipAddress: { ipAddressHeaders: [env.CLIENT_IP_HEADER] } },
+  // Límite de intentos (activo en producción). Better Auth trae 3 cada 10 s en login, unos 1000 por hora:
+  // muy poco para frenar a quien prueba contraseñas.
+  rateLimit: {
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 5 * 60, max: 10 },
+      "/sign-up/email": { window: 60 * 60, max: 5 },
+      "/request-password-reset": { window: 60 * 60, max: 3 },
+      "/reset-password": { window: 60 * 60, max: 10 },
+    },
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {

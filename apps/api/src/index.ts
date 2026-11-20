@@ -19,6 +19,7 @@ import { nearbyRoutes } from "./routes/nearby.js";
 import { premiumRoutes } from "./routes/premium.js";
 import { adminRoutes } from "./routes/admin.js";
 import { toqueRoutes } from "./routes/toques.js";
+import { securityHeaders } from "./security.js";
 
 await runMigrations();
 
@@ -34,6 +35,11 @@ if (!general) {
 }
 
 const app = new Hono<AppEnv>();
+
+// Encabezados de seguridad en todas las respuestas (ver security.ts). La CSP necesita el index.html compilado
+// para permitir, por su hash, el único script en línea (el del tema).
+const indexPath = path.join(env.WEB_DIST, "index.html");
+app.use("*", securityHeaders(env.APP_URL, existsSync(indexPath) ? readFileSync(indexPath, "utf8") : null));
 
 // Si entran por otra dirección (www, el túnel provisorio viejo), los mandamos al dominio principal.
 // Solo en producción (APP_URL con https) y nunca para localhost, así no molesta en desarrollo ni en los chequeos del server.
