@@ -20,7 +20,9 @@ Todo sale de un solo archivo: [`packages/brand/src/index.ts`](../packages/brand/
 | Color de la barra del navegador, fuentes de Google y nombre en `index.html` | `vite.config.ts` completa los `%MARCADORES%` de `index.html`. |
 | `manifest.webmanifest` (la app instalada) | Lo arma `vite.config.ts` con `webManifest()`. Ya no está en `public/`. |
 | Colores de los mails | `mail` en `packages/brand`. |
-| Íconos de la app (Android, iPhone, favicon, notificaciones) | `apps/web/brand/icono.png` → `npm run icons --workspace web`. |
+| Íconos de la app (Android, iPhone, favicon, notificaciones) | `apps/web/brand/icono.svg` → `npm run icons --workspace web`. |
+| El logo en la app (login y pantallas de entrada) | El mismo `icono.svg`, con el componente `Logo` ([`components/Logo.tsx`](../apps/web/src/components/Logo.tsx)). |
+| El logo para redes y presentaciones | [`docs/marca`](marca/README.md): el mate solo y el mate con "qule.ar", en SVG y PNG en alta. |
 | Íconos de la interfaz | [`apps/web/src/components/Icons.tsx`](../apps/web/src/components/Icons.tsx). |
 | Título por defecto de las notificaciones | Escrito a mano en `apps/web/public/sw.js`; `npm run lint` avisa si no coincide con `APP_NAME`. |
 
@@ -102,11 +104,14 @@ Tamaños (`font-size: var(--…)`):
 ## Íconos
 
 - **De la interfaz** (`Icons.tsx`): de línea, en una base de 24 × 24, trazo de 2 px redondeado y `currentColor` (toman el color del texto). Un ícono nuevo va ahí, con el mismo estilo.
-- **De la app**: el mate culo. El original está en `apps/web/brand/icono.png`; después de cambiarlo se corre `npm run icons --workspace web`, que genera todos los tamaños y la silueta blanca de las notificaciones de Android.
+- **De la app**: el mate culo. El original es el vector `apps/web/brand/icono.svg` (fondo transparente, recortado al dibujo); después de cambiarlo se corre `npm run icons --workspace web`, que genera todos los tamaños sobre el fondo de la app (`--bg` del tema Oscuro) y la silueta blanca de las notificaciones de Android.
 
 ## Logo
 
 El mate culo: un mate con su bombilla en el que el cuenco es una cola. Hay contexto y referencias en [`docs/logos`](logos/README.md) y en el hilo de Look and feel.
+
+- **En la app** se usa el componente `Logo`. En las pantallas de entrada (login, bienvenida, contraseña) va arriba del nombre en texto (`Wordmark`). Sin texto alternativo, porque el nombre ya está al lado.
+- **Fuera de la app** (redes, presentaciones): los archivos de [`docs/marca`](marca/README.md).
 
 ## Tono de los textos
 
@@ -132,4 +137,3 @@ Cosas para seguir mejorando la marca desde esta base:
 - **Llevar el color del mate a la app.** El ícono usa un degradé de amarillo a magenta (`#feb107` → `#fe6514` → `#fb134a`) y la app un solo naranja brasa (`#ff6a3d`). Falta decidir cómo conviven.
 - **Escala de espacios.** Márgenes y paddings todavía están en px sueltos; el próximo paso es una escala (`--space-*`) controlada igual que el resto.
 - **Íconos propios** en el estilo del mate, empezando por las cuatro pestañas.
-- **Fondo de los íconos de la app**: `icons.mjs` usa negro puro y la app `#0c0b0d`.

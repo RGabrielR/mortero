@@ -5,6 +5,7 @@ import { Admin } from "./pages/Admin";
 import { Login } from "./pages/Login";
 import { NotifyBanner } from "./components/NotifyBanner";
 import { Wordmark } from "./components/Wordmark";
+import { Logo } from "./components/Logo";
 import { APP_NAME } from "./brand";
 import { ForgotPassword, ResetPassword } from "./pages/Password";
 import { Onboarding } from "./pages/Onboarding";
@@ -44,7 +45,7 @@ export function App() {
     reload();
   }, [reload]);
 
-  if (loading) return <div className="splash"><Wordmark /></div>;
+  if (loading) return <div className="splash"><Logo className="splash__logo" /></div>;
 
   return (
     <MeContext.Provider value={{ me, loading, reload }}>
@@ -89,6 +90,7 @@ function Suspended() {
   return (
     <div className="auth">
       <div className="auth__hero">
+        <Logo className="auth__logo" />
         <Wordmark big />
       </div>
       <div className="auth__card">

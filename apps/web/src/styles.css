@@ -34,6 +34,9 @@ p { margin: 0; }
 .wordmark { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; color: var(--accent); font-size: var(--title-xl); }
 .wordmark--big { font-size: var(--wordmark-hero); line-height: 1; }
 .splash { height: 100%; display: grid; place-items: center; }
+/* El mate (components/Logo.tsx): mantiene su proporción, solo se le da el ancho */
+.logo { display: block; height: auto; }
+.splash__logo { width: 88px; }
 
 /* ---------- Botones e inputs ---------- */
 .btn {
@@ -113,6 +116,9 @@ input[type="date"].input { color-scheme: dark; }
 .auth { min-height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px 16px; gap: 28px;
   background: radial-gradient(600px 400px at 50% -10%, var(--accent-glow), transparent 70%), var(--bg); }
 .auth__hero { text-align: center; }
+.auth__logo { width: 116px; margin: 0 auto 14px; animation: logo-in 0.5s ease-out both; }
+@keyframes logo-in { from { opacity: 0; transform: translateY(6px) scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .auth__logo { animation: none; } }
 .auth__tag { color: var(--muted); margin-top: 10px; max-width: 30ch; font-size: var(--text-lg); }
 .auth__card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-4xl); padding: 22px; display: flex; flex-direction: column; gap: 16px; }
 .segmented { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: var(--radius-pill); padding: 4px; }

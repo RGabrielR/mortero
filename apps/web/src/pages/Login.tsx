@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { api, authClient } from "../api";
 import { useMe } from "../App";
 import { Wordmark } from "../components/Wordmark";
+import { Logo } from "../components/Logo";
 import { GoogleMark } from "../components/GoogleMark";
 
 export function Login() {
@@ -39,6 +40,7 @@ export function Login() {
   return (
     <div className="auth">
       <div className="auth__hero">
+        <Logo className="auth__logo" />
         <Wordmark big />
         <p className="auth__tag">Gente cerca, grupos y charla. Gratis y de código abierto, para siempre.</p>
       </div>

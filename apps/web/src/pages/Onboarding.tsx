@@ -4,6 +4,7 @@ import { api, authClient } from "../api";
 import { useMe } from "../App";
 import { APP_NAME } from "../brand";
 import { Wordmark } from "../components/Wordmark";
+import { Logo } from "../components/Logo";
 
 function maxBirthdate() {
   const d = new Date();
@@ -38,6 +39,7 @@ export function Onboarding() {
   return (
     <div className="auth">
       <div className="auth__hero">
+        <Logo className="auth__logo" />
         <Wordmark big />
         <p className="auth__tag">Dos datos y entrás.</p>
       </div>
