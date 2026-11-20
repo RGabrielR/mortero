@@ -34,6 +34,21 @@ if (!general) {
 
 const app = new Hono<AppEnv>();
 
+// Si entran por otra dirección (www, el túnel provisorio viejo), los mandamos al dominio principal.
+// Solo en producción (APP_URL con https) y nunca para localhost, así no molesta en desarrollo ni en los chequeos del server.
+const canonical = new URL(env.APP_URL);
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+if (canonical.protocol === "https:") {
+  app.use("*", async (c, next) => {
+    const host = (c.req.header("host") ?? "").replace(/:\d+$/, "").toLowerCase();
+    if (!host || host === canonical.hostname || LOCAL_HOSTS.has(host)) return next();
+    const { pathname, search } = new URL(c.req.url);
+    // 301 para GET; 308 para el resto, así un POST sigue siendo POST
+    const status = c.req.method === "GET" || c.req.method === "HEAD" ? 301 : 308;
+    return c.redirect(`${canonical.origin}${pathname}${search}`, status);
+  });
+}
+
 app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 app.route("/api", meRoutes);
 app.route("/api", groupRoutes);
