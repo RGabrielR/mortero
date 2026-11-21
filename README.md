@@ -59,6 +59,7 @@ Copiá `.env.example` a `.env` y completá lo que necesites:
 |---|---|
 | `BETTER_AUTH_SECRET` | Firma de las sesiones. **Obligatoria en producción.** |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Login con Google. Sin estas variables, el botón no aparece. |
+| `DATA_KEY` | Clave que cifra los datos de salud en la base (estado serológico y último test). **Obligatoria en producción.** Se genera con `openssl rand -base64 32`; en desarrollo se crea sola en `data/`. Si se pierde, esos datos no se recuperan. |
 | `DATABASE_URL` | Postgres real. Si no está, se usa PGlite. |
 | `APP_URL` | URL pública de la web (por defecto `http://localhost:5173`). |
 | `ADMIN_EMAILS` | Emails con acceso al panel de moderación, separados por coma. Solo cuentan si el mail de la cuenta está verificado (por ejemplo, si entra con Google). |

@@ -45,6 +45,7 @@ Usar qule.ar puede decir algo sobre tu orientación sexual o tu identidad de gé
 
 - **Nadie está obligado a darlos.** El estado serológico es opcional y lo podés borrar cuando quieras.
 - Si los cargás, nos das tu consentimiento expreso para mostrarlos en tu perfil a las demás personas de la app. Solo los usamos para eso.
+- **El estado serológico y la fecha del último test se guardan cifrados** en la base de datos, con una clave que está aparte. Quien acceda a la base o a un backup sin esa clave no los puede leer.
 - Nunca los vendemos ni los cedemos, y no los usamos para publicidad.
 
 ## 4. Para qué usamos tus datos
@@ -55,7 +56,7 @@ Solo para que la app funcione: mostrar tu perfil, la gente cerca y los grupos, m
 
 ## 5. Dónde están y quién más los ve
 
-**Dónde se guardan:** en un servidor alquilado (VPS) de Contabo, en Europa. Ahí están la base de datos, las fotos, los videos y los backups. La conexión con el servidor va cifrada, pero **los datos guardados en el servidor no están cifrados**: el disco no lo está.
+**Dónde se guardan:** en un servidor alquilado (VPS) de Contabo, en Europa. Ahí están la base de datos, las fotos, los videos y los backups. La conexión con el servidor va cifrada, pero **los datos guardados en el servidor no están cifrados**: el disco no lo está. La excepción es el estado serológico y la fecha del último test, que se guardan cifrados (mirá el punto 3).
 
 **Quién los ve:**
 
@@ -86,12 +87,13 @@ Solo para que la app funcione: mostrar tu perfil, la gente cerca y los grupos, m
 
 - La conexión siempre va cifrada (HTTPS).
 - Las contraseñas se guardan cifradas.
+- El estado serológico y la fecha del último test se guardan cifrados.
 - La base de datos no es accesible desde internet: solo la ve la app.
 - Al servidor solo se entra con clave SSH, con bloqueo de intentos fallidos y actualizaciones de seguridad automáticas.
 - A las fotos y los videos les borramos los metadatos y la ubicación.
 - Las notificaciones no dicen quién te escribió ni qué.
 
-Lo que todavía no hacemos: cifrar los datos guardados en el servidor ni los mensajes de punta a punta, y guardar los backups fuera del servidor (los vamos a copiar afuera, cifrados). Ningún sistema es 100 % seguro, y menos uno en beta. Si pasa algo que afecte tus datos, te vamos a avisar.
+Lo que todavía no hacemos: cifrar el resto de los datos guardados en el servidor ni los mensajes de punta a punta, y guardar los backups fuera del servidor (los vamos a copiar afuera, cifrados). Ningún sistema es 100 % seguro, y menos uno en beta. Si pasa algo que afecte tus datos, te vamos a avisar.
 
 ## 8. Tus derechos
 

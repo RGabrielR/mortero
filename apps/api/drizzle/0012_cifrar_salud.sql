@@ -1,0 +1,1 @@
+ALTER TABLE "profile" ALTER COLUMN "last_tested" SET DATA TYPE text;

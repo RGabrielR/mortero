@@ -33,6 +33,8 @@ Creá `/opt/mortero/app.env` (no lo subas a ningún lado):
 ```env
 APP_URL=https://DOMINIO
 BETTER_AUTH_SECRET=el-secreto-generado
+# Cifra los datos de salud en la base. Otro `openssl rand -base64 32`, distinto del de arriba:
+DATA_KEY=otra-clave-generada
 DATABASE_URL=postgres://mortero:CLAVE_DB@mortero-db:5432/mortero
 VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
@@ -49,6 +51,8 @@ GOOGLE_CLIENT_SECRET=
 ```
 
 Protegelo: `chmod 600 /opt/mortero/app.env`.
+
+**Guardá `DATA_KEY` fuera del servidor** (en el mismo gestor de contraseñas que la de los backups). Sin ella, el estado serológico de la base y de los backups no se puede leer. No la cambies una vez en uso: los datos cifrados con la anterior dejarían de leerse.
 
 ## 3. Base de datos
 

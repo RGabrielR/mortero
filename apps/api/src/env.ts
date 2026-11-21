@@ -26,6 +26,9 @@ export const env = {
   WEB_DIST: process.env.WEB_DIST ?? path.join(root, "apps/web/dist"),
   // Encabezado del que sale la IP real de cada persona (límite de intentos y sesiones). Tiene que ser uno que el
   // proxy de adelante pise siempre: cf-connecting-ip con el túnel de Cloudflare, x-real-ip con el nginx de deploy/.
+  // Clave que cifra los datos de salud en la base (32 bytes en base64). Obligatoria en producción; en desarrollo
+  // se crea sola en DATA_DIR. Si se pierde, esos datos no se recuperan: guardala también fuera del servidor.
+  DATA_KEY: process.env.DATA_KEY,
   CLIENT_IP_HEADER: (process.env.CLIENT_IP_HEADER ?? "cf-connecting-ip").toLowerCase(),
 };
 

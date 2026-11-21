@@ -1,6 +1,7 @@
 import {
   pgTable, text, timestamp, boolean, integer, date, jsonb, uniqueIndex, index, primaryKey, doublePrecision,
 } from "drizzle-orm/pg-core";
+import { encryptedText } from "../crypt.js";
 
 // ---------- Better Auth (no cambiar nombres de campos) ----------
 
@@ -65,8 +66,9 @@ export const profile = pgTable("profile", {
   lookingFor: jsonb("looking_for").$type<string[]>().notNull().default([]),
   relationship: text("relationship"),
   pronouns: text("pronouns"),
-  hivStatus: text("hiv_status"),
-  lastTested: date("last_tested"),
+  // Datos de salud (sensibles, Ley 25.326 art. 2 y 7): se guardan cifrados con DATA_KEY. Ver src/crypt.ts
+  hivStatus: encryptedText("hiv_status"),
+  lastTested: encryptedText("last_tested"),
   // Ubicación: SOLO se guarda el centro de una celda de ~500 m, nunca la posición exacta
   cellLat: doublePrecision("cell_lat"),
   cellLng: doublePrecision("cell_lng"),

@@ -85,6 +85,13 @@
       "when": 1795215665331,
       "tag": "0011_report_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795282908706,
+      "tag": "0012_cifrar_salud",
+      "breakpoints": true
     }
   ]
 }

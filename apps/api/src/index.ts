@@ -3,7 +3,7 @@ import type { Server as HttpServer } from "node:http";
 import path from "node:path";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { eq } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { auth } from "./auth.js";
@@ -21,8 +21,19 @@ import { adminRoutes } from "./routes/admin.js";
 import { toqueRoutes } from "./routes/toques.js";
 import { securityHeaders } from "./security.js";
 import { sweepExpiredPhotos } from "./expiring.js";
+import { checkDataKey } from "./crypt.js";
 
+checkDataKey();
 await runMigrations();
+
+// Datos de salud guardados antes del cifrado: se cifran una sola vez (ver src/crypt.ts)
+{
+  const p = schema.profile;
+  const legacy = await db.select({ id: p.userId, hivStatus: p.hivStatus, lastTested: p.lastTested }).from(p)
+    .where(or(sql`${p.hivStatus} not like 'v1:%'`, sql`${p.lastTested} not like 'v1:%'`));
+  for (const { id, ...health } of legacy) await db.update(p).set(health).where(eq(p.userId, id));
+  if (legacy.length) console.log(`Datos de salud cifrados: ${legacy.length} perfiles`);
+}
 
 // Fotos temporales ya vistas: se borran al arrancar (por si el API se reinició justo después de abrir una) y cada minuto
 await sweepExpiredPhotos().catch((e) => console.error("sweepExpiredPhotos", e));
