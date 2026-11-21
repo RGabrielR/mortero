@@ -93,20 +93,66 @@ Si el servidor ya tiene otros sitios, este bloque se suma sin tocar los demás.
 
 ## 6. Backups
 
+Todas las noches `deploy/backup.sh` guarda la base y las fotos **cifradas y fuera del servidor**, con [restic](https://restic.net). Se cifran en el servidor antes de salir (AES-256): el proveedor del almacenamiento no puede ver nada. Se guardan 14 días, lo que dice la política de privacidad.
+
+Si se pierde el servidor, los backups siguen estando. Si se pierde **la contraseña de restic**, no se pueden recuperar: por eso se guarda también fuera del servidor.
+
+### Una sola vez
+
+1. **Almacenamiento:** un bucket privado en Cloudflare R2 (ya usamos Cloudflare; 10 GB gratis), por ejemplo `qule-backups`. Un token de API de R2 con permiso de lectura y escritura **solo sobre ese bucket**. Sirve cualquier S3 compatible (Backblaze B2, etc.).
+2. **restic 0.17 o más nuevo** en el servidor (el de `apt` puede ser más viejo, por eso se actualiza):
+
+   ```bash
+   apt install -y restic && restic self-update && restic version
+   ```
+
+3. **Configuración y contraseña:**
+
+   ```bash
+   cp /opt/mortero/src/deploy/backup.env.example /opt/mortero/backup.env
+   nano /opt/mortero/backup.env          # repositorio y token de R2
+   openssl rand -base64 32 > /opt/mortero/restic-password
+   chmod 600 /opt/mortero/backup.env /opt/mortero/restic-password
+   ```
+
+   **Guardá la contraseña** (`cat /opt/mortero/restic-password`) en un gestor de contraseñas, que la tengan al menos dos personas del equipo. No va al repo ni a las Discusiones.
+
+4. **Crear el repositorio y probar:**
+
+   ```bash
+   set -a; . /opt/mortero/backup.env; set +a
+   restic init
+   /opt/mortero/src/deploy/backup.sh
+   restic snapshots                       # tiene que mostrar uno "db" y uno "fotos"
+   ```
+
+5. **Cron** (como root, `crontab -e`):
+
+   ```
+   0 4 * * * /opt/mortero/src/deploy/backup.sh >> /var/log/qule-backup.log 2>&1
+   ```
+
+6. **Borrar los backups viejos sin cifrar**, una vez que el primero cifrado funcionó: `rm -rf /opt/mortero/backups`.
+
+### Restaurar
+
 ```bash
-mkdir -p /opt/mortero/backups
-crontab -e
-# agregar:
-0 4 * * * /opt/mortero/src/deploy/backup.sh >> /opt/mortero/backups/backup.log 2>&1
+set -a; . /opt/mortero/backup.env; set +a
+restic snapshots                                        # elegir la fecha
+# Base (latest = la última; o el ID de un snapshot):
+restic dump --tag db latest /db.dump | docker exec -i mortero-db pg_restore -U mortero -d mortero --clean --if-exists
+# Fotos (se restauran en una carpeta aparte y después se copian al volumen):
+restic restore --tag fotos latest --target /tmp/restore
+# quedan con la ruta completa: /tmp/restore/var/lib/docker/volumes/mortero-data/_data/uploads
 ```
 
-Guarda la base y las fotos todas las noches y borra lo que tenga más de 14 días. Conviene copiar esa carpeta a otro lado de vez en cuando.
+Las miniaturas no se guardan: la app las vuelve a generar sola.
 
-Para restaurar la base:
+Conviene probar la restauración cada tanto en otra máquina o en una base de prueba: un backup que nunca se restauró no está probado.
 
-```bash
-docker exec -i mortero-db pg_restore -U mortero -d mortero --clean < /opt/mortero/backups/db_FECHA.dump
-```
+### Si alguien borra su cuenta
+
+Sus datos salen de la base al instante, pero pueden quedar en los backups hasta 14 días. Después `restic forget --prune` los borra solos. Por eso no hay que subir `KEEP_DAYS` sin cambiar antes la política de privacidad.
 
 ## Seguridad: la IP de cada persona
 
