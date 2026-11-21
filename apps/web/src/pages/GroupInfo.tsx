@@ -242,9 +242,7 @@ export function GroupInfo() {
               <>
                 <button className="btn" onClick={() => setConfirm("leave")}>Salir del grupo</button>
                 {isOwner && <button className="btn btn--ghost btn--dangertext" onClick={() => setConfirm("delete")}>Borrar grupo</button>}
-                {!isOwner && (
-                  <button className="btn btn--ghost btn--dangertext" onClick={() => setReporting(true)}>Reportar este grupo</button>
-                )}
+                <button type="button" className="btn btn--ghost btn--dangertext" onClick={() => setReporting(true)}>Reportar este grupo</button>
               </>
             )}
           </div>

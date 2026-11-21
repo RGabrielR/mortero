@@ -7,15 +7,12 @@ import { preparePhotoForUpload } from "../features/photos/preparePhoto";
 import { PlusIcon } from "../components/Icons";
 import { MyInvites } from "../components/Invite";
 import { JoinButton } from "../components/JoinButton";
-import { ReportDialog } from "../components/ReportDialog";
 
 export function Groups() {
   const [params, setParams] = useSearchParams();
   const tab = params.get("ver") === "todos" ? "all" : "mine";
   const [mine, setMine] = useState<MyGroup[] | null>(null);
   const [all, setAll] = useState<GroupListing[] | null>(null);
-  // Grupo que se está reportando desde la lista (se puede reportar sin ser parte)
-  const [reporting, setReporting] = useState<GroupListing | null>(null);
   const [q, setQ] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -108,8 +105,7 @@ export function Groups() {
                       {g.description && <p className="gcard__desc">{g.description}</p>}
                     </Link>
                     <p className="gcard__meta">
-                      {g.memberCount} {g.memberCount === 1 ? "miembro" : "miembros"} ·{" "}
-                      <button type="button" className="gcard__report" onClick={() => setReporting(g)}>Reportar</button>
+                      {g.memberCount} {g.memberCount === 1 ? "miembro" : "miembros"}
                     </p>
                   </div>
                   <div className="gcard__action">
@@ -123,7 +119,6 @@ export function Groups() {
       )}
 
       {creating && <CreateGroup onClose={() => setCreating(false)} />}
-      {reporting && <ReportDialog groupId={reporting.id} name={reporting.name} onClose={() => setReporting(null)} />}
     </div>
   );
 }

@@ -25,7 +25,7 @@ En Argentina, una plataforma no responde por lo que publican otras personas **mi
 
 ## Grupos
 
-- **Se pueden reportar** desde la lista de grupos ("Reportar", sin necesidad de ser parte) o desde la info del grupo. Los motivos son los mismos que para las personas.
+- **Se pueden reportar** al abrir la vista previa del grupo o desde **Ver detalles** si ya sos parte. Los motivos son los mismos que para las personas.
 - **Ocultamiento por precaución:** con reportes urgentes de 3 personas distintas, el grupo deja de aparecer al explorar y no acepta pedidos de ingreso ni invitaciones hasta que moderación lo revise.
 - **Dar de baja** (botón en el reporte, con motivo obligatorio): el grupo desaparece para todo el mundo, incluidos sus miembros, y queda guardado **90 días** como prueba, sin que nadie de la app lo vea. Después se borra del todo, y los reportes conservan la copia del nombre y la descripción. Si fue un error, se reactiva desde la pestaña "Grupos de baja".
 - **Si el dueño borra un grupo con reportes**, o se va la última persona, no se borra: se da de baja igual que arriba, así no se pierde la prueba.

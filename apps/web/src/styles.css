@@ -625,7 +625,6 @@ button.quote:hover { background: var(--surface-3); }
 .pill--urgent { background: var(--danger-soft); color: var(--danger); }
 .report-urgent { padding: 10px 12px; border-radius: var(--radius-lg); background: var(--danger-soft); border: 1px solid var(--danger-line); color: var(--text); }
 
-/* Moderación de grupos: reportar desde la lista y la tarjeta del grupo en el panel */
-.gcard__report { background: none; border: 0; padding: 0; color: var(--muted); font-size: var(--text-xs); text-decoration: underline; }
+/* Tarjeta del grupo en el panel de moderación */
 .rcard__group > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rcard__groupdesc { color: var(--text); overflow-wrap: anywhere; }

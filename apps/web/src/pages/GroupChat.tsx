@@ -61,6 +61,7 @@ export function GroupChat() {
     }
   }
   const [reporting, setReporting] = useState<GroupMessage | null>(null);
+  const [reportingGroupId, setReportingGroupId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const listRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
@@ -247,7 +248,7 @@ export function GroupChat() {
   if (!info) return <div className="chat" />;
   const rulesText = slowModeText(info.rules);
 
-  // Vista previa para quien no es miembro: no ve los mensajes, solo puede pedir ingreso
+  // Vista previa para quien todavía no es miembro del grupo
   if (!isMember) {
     return (
       <div className="page">
@@ -270,7 +271,15 @@ export function GroupChat() {
             <JoinButton g={info} onChange={() => setInfoTick((t) => t + 1)} />
           </div>
           <p className="small">Los mensajes de este grupo solo los ven sus miembros.</p>
+          {!info.isGeneral && (
+            <button type="button" className="btn btn--small btn--ghost btn--dangertext" onClick={() => setReportingGroupId(info.id)}>
+              Reportar este grupo
+            </button>
+          )}
         </div>
+        {reportingGroupId === id && (
+          <ReportDialog groupId={info.id} name={info.name} onClose={() => setReportingGroupId(null)} />
+        )}
       </div>
     );
   }
