@@ -42,9 +42,12 @@ if [ -f "$RESTIC_ENV" ]; then
       -v "$DUMP":/backup/db.dump:ro \
       "$RESTIC_IMAGE" "$@"
   }
-  restic backup --host qule --tag nocturno /backup/db.dump /data/uploads
-  # Lo viejo se descarta: 7 diarios, 4 semanales, 6 mensuales. Una foto borrada desaparece del todo en ~6 meses.
-  restic forget --host qule --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+  # Las miniaturas no se copian: se regeneran solas la primera vez que se piden
+  restic backup --host qule --tag nocturno --exclude /data/uploads/thumbs /backup/db.dump /data/uploads
+  # Retención: la política de privacidad promete que lo borrado desaparece de los backups en 14 días.
+  # Se guardan REMOTE_KEEP_DAYS (7) días de copias, y el bucket borra del todo lo descartado a los 7 días
+  # (ver docs/DEPLOY.md): 7 + 7 = 14. No subas ninguno de los dos sin cambiar antes la política.
+  restic forget --host qule --keep-within "${REMOTE_KEEP_DAYS:-7}d" --prune
   # Los domingos se verifica que el repositorio esté sano y se leen al azar 5% de los datos
   if [ "$(date +%u)" = 7 ]; then restic check --read-data-subset=5%; fi
   echo "$(date -Is) copia cifrada afuera ok"

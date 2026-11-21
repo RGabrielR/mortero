@@ -103,13 +103,15 @@ crontab -e
 Todas las noches `backup.sh` hace dos copias:
 
 - **Local**, en `backups/`: solo la base, para volver atrás rápido si un deploy sale mal. Dura 3 días (14 si no hay copia afuera).
-- **Afuera y cifrada**, con [restic](https://restic.net): la base y las fotos. Se cifra en el servidor antes de salir, así que el proveedor de almacenamiento no puede ver nada.
+- **Afuera y cifrada**, con [restic](https://restic.net): la base y las fotos (sin las miniaturas, que se regeneran solas). Se cifra en el servidor antes de salir, así que el proveedor de almacenamiento no puede ver nada. Se guardan los últimos 7 días.
+
+**Retención: 14 días en total, como promete la política de privacidad.** restic descarta las copias de más de 7 días, pero como la clave no puede borrar (ver abajo), lo descartado queda oculto en el bucket y el bucket lo borra del todo 7 días después. 7 + 7 = 14: si alguien borra su cuenta, a los 14 días no queda nada suyo en ningún backup. No subas `REMOTE_KEEP_DAYS` ni los días del bucket sin cambiar antes la política.
 
 Las fotos son lo más sensible que guardamos (es una app de encuentros), así que **no se copian sin cifrar al disco local**. Si alguna vez hace falta, `LOCAL_PHOTOS=1` las agrega como `.tar.gz`.
 
 ### Copia cifrada afuera (Backblaze B2 o cualquier S3)
 
-1. Creá un bucket **privado** en Backblaze B2. En "Lifecycle Settings" elegí que los archivos ocultos se borren a los 30 días. Así, si alguien entra al servidor y borra los backups, durante 30 días se pueden recuperar.
+1. Creá un bucket **privado** en Backblaze B2. En "Lifecycle Settings" elegí que los archivos ocultos se borren a los **7 días** (no más: sumados a los 7 de restic dan los 14 que promete la política de privacidad). Así, si alguien entra al servidor y borra los backups, durante 7 días se pueden recuperar.
 2. Creá una clave de aplicación **solo para ese bucket y sin permiso de borrar** (`deleteFiles`). La web de B2 no deja sacar ese permiso, así que se hace con la [herramienta `b2`](https://www.backblaze.com/docs/cloud-storage-command-line-tools):
 
    ```bash
